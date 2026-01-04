@@ -1,0 +1,60 @@
+# ============================================
+# GENERAL
+# ============================================
+.DS_Store
+*.log
+*.swp
+*.swo
+*~
+
+# ============================================
+# ENVIRONMENT VARIABLES
+# ============================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.prod
+
+# ============================================
+# FRONTEND (Next.js)
+# ============================================
+my-life-os-frontend/node_modules/
+my-life-os-frontend/.next/
+my-life-os-frontend/out/
+my-life-os-frontend/build/
+my-life-os-frontend/.turbo/
+my-life-os-frontend/*.tsbuildinfo
+my-life-os-frontend/next-env.d.ts
+
+# ============================================
+# BACKEND (Go)
+# ============================================
+my-life-os-backend/tmp/
+my-life-os-backend/*.exe
+my-life-os-backend/*.exe~
+my-life-os-backend/*.dll
+my-life-os-backend/*.so
+my-life-os-backend/*.dylib
+my-life-os-backend/*.test
+my-life-os-backend/*.out
+my-life-os-backend/vendor/
+my-life-os-backend/.air.toml
+
+# ============================================
+# DOCKER
+# ============================================
+postgres_data/
+
+# ============================================
+# IDE
+# ============================================
+.vscode/
+.idea/
+*.iml
+
+# ============================================
+# OS
+# ============================================
+Thumbs.db

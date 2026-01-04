@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: mylifeos-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mylifeos
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: S3cretP4ssword!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d mylifeos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mylifeos-network
+
+  # Go Backend API
+  backend:
+    build:
+      context: ./my-life-os-backend
+      dockerfile: Dockerfile
+    container_name: mylifeos-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://admin:S3cretP4ssword!@postgres:5432/mylifeos?sslmode=disable
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - PORT=8080
+      - ENV=development
+    volumes:
+      - ./my-life-os-backend:/app
+      - /app/tmp  # Air hot reload cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mylifeos-network
+    command: air -c .air.toml  # Hot reload mit Air
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./my-life-os-frontend
+      dockerfile: Dockerfile
+    container_name: mylifeos-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
+    volumes:
+      - ./my-life-os-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - mylifeos-network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  mylifeos-network:
+    driver: bridge
