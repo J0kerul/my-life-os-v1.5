@@ -1,0 +1,8 @@
+tmp
+.git
+.gitignore
+README.md
+.env.local
+*.exe
+*.test
+vendor
