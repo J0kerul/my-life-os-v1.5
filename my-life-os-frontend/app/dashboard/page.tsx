@@ -36,15 +36,19 @@ export default function DashboardPage() {
             {/* Left: Greeting with Clock Icon */}
             <div className="flex items-center gap-3">
               <Clock className="w-6 h-6 text-primary" strokeWidth={2} />
-              <h1 className="text-[2.5rem] font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                {greeting.text}, <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Alex</span>{greeting.punctuation}
+              <h1 className="text-[2.5rem] font-bold">
+                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+                  {greeting.text}, Alex{greeting.punctuation}
+                </span>
               </h1>
             </div>
 
             {/* Right: Date */}
             <div>
-              <p className="text-lg font-light text-muted-foreground">
-                Heute ist der {getFormattedDate()}
+              <p className="text-xl font-bold">
+                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+                  Heute ist der {getFormattedDate()}
+                </span>
               </p>
             </div>
           </div>
