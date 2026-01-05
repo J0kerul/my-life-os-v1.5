@@ -8,11 +8,10 @@ import (
 )
 
 type Config struct {
-	Port         string
-	Environtment string
-	DatabaseURL  string
-	JWTSecret    string
-	JWTExpiry    string
+	Port           string
+	Environment    string
+	DatabaseURL    string
+	JWTSecret      string
 	AllowedOrigins string
 }
 
@@ -25,11 +24,10 @@ func Load() *Config {
 	}
 
 	return &Config{
-		Port:          getEnv("PORT", "8080"),
-		Environtment:  getEnv("ENV", "development"),
-		DatabaseURL:   getEnv("DATABASE_URL", ""),
-		JWTSecret:     getEnv("JWT_SECRET", ""),
-		JWTExpiry:     getEnv("JWT_EXPIRY", "24h"),
+		Port:           getEnv("PORT", "8080"),
+		Environment:    getEnv("ENV", "development"),
+		DatabaseURL:    getEnv("DATABASE_URL", ""),
+		JWTSecret:      getEnv("JWT_SECRET", ""),
 		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
 	}
 }
