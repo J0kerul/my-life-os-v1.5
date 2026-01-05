@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -8,10 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// token expiry durations
+// Token expiry durations
 const (
-	AccessTokenExpiry  = 15 * time.Minute
-	RefreshTokenExpiry = 7 * 24 * time.Hour
+	AccessTokenExpiry  = 15 * time.Minute   // 15 minutes
+	RefreshTokenExpiry = 7 * 24 * time.Hour // 7 days
 )
 
 // Token types
@@ -22,9 +24,9 @@ const (
 
 // CustomClaims defines the JWT payload structure
 type CustomClaims struct {
-	UserID    uuid.UUID `json:"user_id"`
+	UserID    uuid.UUID `json:"userId"`
 	Email     string    `json:"email"`
-	TokenType string    `json:"token_type"`
+	TokenType string    `json:"tokenType"`
 	jwt.RegisteredClaims
 }
 
@@ -73,7 +75,7 @@ func ValidateAccessToken(tokenString, secret string) (*CustomClaims, error) {
 		return nil, err
 	}
 
-	// verify token type
+	// Verify token type
 	if claims.TokenType != TokenTypeAccess {
 		return nil, errors.New("invalid token type: expected access token")
 	}
@@ -88,7 +90,7 @@ func ValidateRefreshToken(tokenString, secret string) (*CustomClaims, error) {
 		return nil, err
 	}
 
-	// verify token type
+	// Verify token type
 	if claims.TokenType != TokenTypeRefresh {
 		return nil, errors.New("invalid token type: expected refresh token")
 	}
@@ -96,10 +98,10 @@ func ValidateRefreshToken(tokenString, secret string) (*CustomClaims, error) {
 	return claims, nil
 }
 
-// validateToken is a helper function to parse and validate a JWT token
+// validateToken is a helper function that validates any JWT token
 func validateToken(tokenString, secret string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// verify signing method
+		// Verify signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -122,15 +124,19 @@ func validateToken(tokenString, secret string) (*CustomClaims, error) {
 	return claims, nil
 }
 
-// HashRefreshToken creates a hash of the refresh token for database storage
-// We store the hash, not the raw token (same principle as passwords!)
+// HashRefreshToken creates a SHA256 hash of the refresh token for database storage
+// Note: We use SHA256 instead of Bcrypt because JWT tokens are too long (>72 bytes)
+// and Bcrypt has a 72-byte input limit. SHA256 is secure for hashing tokens.
 func HashRefreshToken(token string) (string, error) {
-	// We can reuse the password hashing since it's the same Bcrypt
-	return HashPassword(token)
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:]), nil
 }
 
 // VerifyRefreshTokenHash compares a token with its stored hash
 func VerifyRefreshTokenHash(token, hash string) bool {
-	// We can reuse the password checking since it's the same Bcrypt
-	return CheckPassword(token, hash)
+	tokenHash, err := HashRefreshToken(token)
+	if err != nil {
+		return false
+	}
+	return tokenHash == hash
 }
