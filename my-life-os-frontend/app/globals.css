@@ -1,93 +1,73 @@
-@import "tailwindcss";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 :root {
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --radius: 0.75rem;
 
   /* Deep Space Dark Mode - MyLifeOS Design System */
-  --background: #050505;
-  --foreground: #e8e8e8;
-  --card: #121418;
-  --card-foreground: #e8e8e8;
-  --border: #202329;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1d23;
-  --secondary-foreground: #e8e8e8;
-  --muted: #1a1d23;
-  --muted-foreground: #9ca3af;
-  --accent: #2d3139;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --ring: #6366f1;
+  --background: 5 5 5;
+  --foreground: 232 232 232;
+  --card: 18 20 24;
+  --card-foreground: 232 232 232;
+  --border: 32 35 41;
+  --primary: 99 102 241;
+  --primary-foreground: 255 255 255;
+  --secondary: 26 29 35;
+  --secondary-foreground: 232 232 232;
+  --muted: 26 29 35;
+  --muted-foreground: 156 163 175;
+  --accent: 45 49 57;
+  --accent-foreground: 255 255 255;
+  --destructive: 239 68 68;
+  --ring: 99 102 241;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+* {
+  border-color: rgb(var(--border));
+}
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-feature-settings: 'cv11', 'ss01';
-  }
+body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+}
 
-  /* Glassmorphism Utilities */
-  .glass {
-    background: rgba(18, 20, 24, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(18, 20, 24, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
 
-  .glass-border {
-    border: 1px solid rgba(32, 35, 41, 0.8);
-  }
+.glass-border {
+  border: 1px solid rgba(32, 35, 41, 0.8);
+}
 
-  /* Smooth Scroll */
-  html {
-    scroll-behavior: smooth;
-  }
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
 
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  ::-webkit-scrollbar-track {
-    background: var(--background);
-  }
+::-webkit-scrollbar-track {
+  background: rgb(var(--background));
+}
 
-  ::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 4px;
-  }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 4px;
+}
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--muted);
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--muted));
 }
