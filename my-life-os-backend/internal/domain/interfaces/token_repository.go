@@ -7,18 +7,18 @@ import (
 
 // TokenRepository defines the interface for token database operations.
 type TokenRepository interface {
-	// Create stores a new refresh token in the database
-	Create(token *entities.RefreshToken) error
+	// CreateRefreshToken stores a new refresh token in the database
+	CreateRefreshToken(token *entities.RefreshToken) error
 
-	// FindByHash retrieves a refresh token by its hash
-	FindByHash(tokenHash string) (*entities.RefreshToken, error)
+	// FindRefreshTokenByHash retrieves a refresh token by its hash
+	FindRefreshTokenByHash(tokenHash string) (*entities.RefreshToken, error)
 
-	// DeleteByHash removes a refresh token by its hash (used during refresh/logout)
-	DeleteByHash(tokenHash string) error
+	// DeleteRefreshTokenByHash removes a refresh token by its hash (used during refresh/logout)
+	DeleteRefreshTokenByHash(tokenHash string) error
 
-	// DeleteByUserID removes all refresh tokens for a specific user (used during logout)
-	DeleteByUserID(userID uuid.UUID) error
+	// DeleteRefreshTokensByUserID removes all refresh tokens for a specific user (used during logout)
+	DeleteRefreshTokensByUserID(userID uuid.UUID) error
 
-	// DeleteExpired removes all expired refresh tokens (cleanup)
-	DeleteExpired() error
+	// DeleteExpiredRefreshTokens removes all expired refresh tokens (cleanup)
+	DeleteExpiredRefreshTokens() error
 }

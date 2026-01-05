@@ -7,18 +7,18 @@ import (
 
 // UserRepository defines the interface for user database operations.
 type UserRepository interface {
-	// Create creates a new user in the database
-	Create(user *entities.User) error
+	// CreateUser creates a new user in the database
+	CreateUser(user *entities.User) error
 
-	// FindByID retrieves a user by their unique ID
-	FindByID(id uuid.UUID) (*entities.User, error)
+	// FindUserByID retrieves a user by their unique ID
+	FindUserByID(id uuid.UUID) (*entities.User, error)
 
-	// FindByEmail retrieves a user by their email address
-	FindByEmail(email string) (*entities.User, error)
+	// FindUserByEmail retrieves a user by their email address
+	FindUserByEmail(email string) (*entities.User, error)
 
-	// Update updates an existing user's information
-	Update(user *entities.User) error
+	// UpdateUser updates an existing user's information
+	UpdateUser(user *entities.User) error
 
-	// Count returns the total number of users in the database (for setup check)
-	Count() (int64, error)
+	// CountUsers returns the total number of users in the database (for setup check)
+	CountUsers() (int64, error)
 }
