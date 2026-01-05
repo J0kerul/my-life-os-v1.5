@@ -3,20 +3,28 @@
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { AuthGuard } from "@/components/auth-guard";
+import { Clock } from "lucide-react";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-      // Even if logout fails, redirect to login
-      router.push("/login");
-    }
+  // Zeit-basierte Begrüßung
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    
+    if (hour >= 5 && hour < 11) return { text: "Guten Morgen", punctuation: "" };
+    if (hour >= 11 && hour < 18) return { text: "Guten Tag", punctuation: "" };
+    if (hour >= 18 && hour < 22) return { text: "Guten Abend", punctuation: "" };
+    return { text: "Noch wach", punctuation: "?" };
+  };
+
+  const greeting = getGreeting();
+
+  // Formatiertes Datum: "Montag, 5. Januar 2026"
+  const getFormattedDate = () => {
+    return format(new Date(), "EEEE, d. MMMM yyyy", { locale: de });
   };
 
   return (
@@ -24,41 +32,26 @@ export default function DashboardPage() {
       <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">
-                Welcome back{user?.name ? `, ${user.name}` : ""}! 👋
+          <div className="flex items-start justify-between mb-12">
+            {/* Left: Greeting with Clock Icon */}
+            <div className="flex items-center gap-3">
+              <Clock className="w-6 h-6 text-primary" strokeWidth={2} />
+              <h1 className="text-[2.5rem] font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                {greeting.text}, <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Alex</span>{greeting.punctuation}
               </h1>
-              <p className="text-muted-foreground">
-                Your personal life operating system
-              </p>
             </div>
 
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-secondary hover:bg-secondary/80 border border-border rounded-lg transition-colors"
-            >
-              Logout
-            </button>
+            {/* Right: Date */}
+            <div>
+              <p className="text-lg font-light text-muted-foreground">
+                Heute ist der {getFormattedDate()}
+              </p>
+            </div>
           </div>
 
-          {/* Placeholder Content */}
-          <div className="glass glass-border rounded-lg p-8">
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold mb-4">Dashboard Coming Soon</h2>
-              <p className="text-muted-foreground mb-6">
-                Your widgets and productivity tools will appear here
-              </p>
-              
-              {/* User Info */}
-              {user && (
-                <div className="inline-block bg-secondary/50 border border-border rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Logged in as</p>
-                  <p className="font-medium">{user.email || user.name || "User"}</p>
-                </div>
-              )}
-            </div>
+          {/* Placeholder for Widgets */}
+          <div className="text-center py-20 text-muted-foreground">
+            <p className="text-xl font-light">Widgets coming soon...</p>
           </div>
         </div>
       </div>
