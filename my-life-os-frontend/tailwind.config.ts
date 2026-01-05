@@ -9,13 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        border: "rgb(var(--border) / <alpha-value>)",
         background: "rgb(var(--background) / <alpha-value>)",
         foreground: "rgb(var(--foreground) / <alpha-value>)",
-        card: {
-          DEFAULT: "rgb(var(--card) / <alpha-value>)",
-          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
-        },
-        border: "rgb(var(--border) / <alpha-value>)",
         primary: {
           DEFAULT: "rgb(var(--primary) / <alpha-value>)",
           foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
@@ -23,6 +19,9 @@ const config: Config = {
         secondary: {
           DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
           foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
+        },
+        destructive: {
+          DEFAULT: "rgb(var(--destructive) / <alpha-value>)",
         },
         muted: {
           DEFAULT: "rgb(var(--muted) / <alpha-value>)",
@@ -32,17 +31,15 @@ const config: Config = {
           DEFAULT: "rgb(var(--accent) / <alpha-value>)",
           foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
         },
-        destructive: {
-          DEFAULT: "rgb(var(--destructive) / <alpha-value>)",
+        card: {
+          DEFAULT: "rgb(var(--card) / <alpha-value>)",
+          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-      },
-      fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "sans-serif"],
       },
     },
   },
