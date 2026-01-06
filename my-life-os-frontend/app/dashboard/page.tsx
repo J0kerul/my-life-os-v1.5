@@ -22,9 +22,12 @@ export default function DashboardPage() {
 
   const greeting = getGreeting();
 
-  // Formatiertes Datum: "Montag, 5. Januar 2026"
+  // Formatiertes Datum: "Montag, der 5. Januar 2026"
   const getFormattedDate = () => {
-    return format(new Date(), "EEEE, d. MMMM yyyy", { locale: de });
+    const date = new Date();
+    const weekday = format(date, "EEEE", { locale: de });
+    const rest = format(date, "d. MMMM yyyy", { locale: de });
+    return `${weekday}, der ${rest}`;
   };
 
   return (
@@ -32,25 +35,30 @@ export default function DashboardPage() {
       <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-start justify-between mb-12">
-            {/* Left: Greeting with Clock Icon */}
-            <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 text-primary" strokeWidth={2} />
-              <h1 className="text-[2.5rem] font-bold">
-                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-                  {greeting.text}, Alex{greeting.punctuation}
-                </span>
-              </h1>
-            </div>
+          <div className="mt-16 mb-12">
+            <div className="flex items-end justify-between pb-4">
+              {/* Left: Greeting with Clock Icon */}
+              <div className="flex items-center gap-3">
+                <Clock className="w-6 h-6 text-primary" strokeWidth={2} />
+                <h1 className="text-4xl md:text-5xl font-bold leading-none">
+                  <span className="bg-gradient-to-r from-gray-200 via-primary to-purple-500 bg-clip-text text-transparent">
+                    {greeting.text}, Alex{greeting.punctuation}
+                  </span>
+                </h1>
+              </div>
 
-            {/* Right: Date */}
-            <div>
-              <p className="text-xl font-bold">
-                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-                  Heute ist der {getFormattedDate()}
-                </span>
-              </p>
+              {/* Right: Date */}
+              <div>
+                <p className="text-2xl md:text-3xl font-bold leading-none">
+                  <span className="bg-gradient-to-r from-gray-200 via-primary to-purple-500 bg-clip-text text-transparent">
+                    Heute ist {getFormattedDate()}
+                  </span>
+                </p>
+              </div>
             </div>
+            
+            {/* Gradient Line */}
+            <div className="h-[2px] md:h-[3px] w-full bg-gradient-to-r from-gray-200 via-primary to-purple-500"></div>
           </div>
 
           {/* Placeholder for Widgets */}
