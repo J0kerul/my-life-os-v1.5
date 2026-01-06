@@ -42,38 +42,41 @@ export default function DashboardPage() {
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <div className="min-h-screen p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mt-16 mb-12">
-            <div className="flex items-end justify-between pb-4">
-              {/* Left: Greeting with Clock Icon */}
-              <div className="flex items-center gap-3">
-                <Clock className="w-6 h-6 text-primary" strokeWidth={2} />
-                <h1 className="text-4xl md:text-5xl font-bold leading-none">
-                  <span className="bg-gradient-to-r from-gray-200 via-primary to-purple-500 bg-clip-text text-transparent">
-                    {greeting.text}, Alex{greeting.punctuation}
-                  </span>
-                </h1>
-              </div>
-
-              {/* Right: Date */}
-              <div>
-                <p className="text-2xl md:text-3xl font-bold leading-none">
-                  <span className="bg-gradient-to-r from-gray-200 via-primary to-purple-500 bg-clip-text text-transparent">
-                    Heute ist {getFormattedDate()}
-                  </span>
-                </p>
-              </div>
+      <div className="min-h-screen">
+        {/* Header - Full Width */}
+        <div className="pt-8 px-36 pr-8 mt-16 mb-12">
+          <div className="flex items-end justify-between pb-4">
+            {/* Left: Greeting with Clock Icon */}
+            <div className="flex items-center gap-3">
+              <Clock className="w-6 h-6 text-primary" strokeWidth={2} />
+              <h1 className="text-4xl md:text-5xl font-bold leading-none">
+                <span className="bg-gradient-to-r from-gray-200 via-primary to-purple-500 bg-clip-text text-transparent">
+                  {greeting.text}, Alex{greeting.punctuation}
+                </span>
+              </h1>
             </div>
-            
-            {/* Gradient Line */}
-            <div className="h-[2px] md:h-[3px] w-full bg-gradient-to-r from-gray-200 via-primary to-purple-500"></div>
-          </div>
 
-          {/* Placeholder for Widgets */}
-          <div className="text-center py-20 text-muted-foreground">
-            <p className="text-xl font-light">Widgets coming soon...</p>
+            {/* Right: Date */}
+            <div>
+              <p className="text-2xl md:text-3xl font-bold leading-none">
+                <span className="bg-gradient-to-r from-gray-200 via-primary to-purple-500 bg-clip-text text-transparent">
+                  Heute ist {getFormattedDate()}
+                </span>
+              </p>
+            </div>
+          </div>
+          
+          {/* Gradient Line */}
+          <div className="h-[2px] md:h-[3px] w-full bg-gradient-to-r from-gray-200 via-primary to-purple-500"></div>
+        </div>
+
+        {/* Content Container */}
+        <div className="px-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Placeholder for Widgets */}
+            <div className="text-center py-20 text-muted-foreground">
+              <p className="text-xl font-light">Widgets coming soon...</p>
+            </div>
           </div>
         </div>
       </div>
