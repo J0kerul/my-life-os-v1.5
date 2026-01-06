@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   
+  // Disable Next.js DevTools indicator
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  },
+  
   // API Backend URL für Production
   async rewrites() {
     return [

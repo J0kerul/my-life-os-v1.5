@@ -1,14 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { AuthGuard } from "@/components/auth-guard";
+import { BurgerMenu } from "@/components/burger-menu";
+import { Sidebar } from "@/components/sidebar";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Zeit-basierte Begrüßung
   const getGreeting = () => {
@@ -32,6 +36,12 @@ export default function DashboardPage() {
 
   return (
     <AuthGuard>
+      {/* Burger Menu */}
+      <BurgerMenu onClick={() => setIsSidebarOpen(true)} />
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
       <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
