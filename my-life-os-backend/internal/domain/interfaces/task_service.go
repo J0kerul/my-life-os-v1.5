@@ -14,8 +14,8 @@ type TaskService interface {
 	// GetTask retrieves a single task by its ID for a user
 	GetTask(taskID, userID uuid.UUID) (*entities.Task, error)
 
-	// GetsUserTasks retrieves all tasks for a user
-	GetsUserTasks(userID uuid.UUID) ([]*entities.Task, error)
+	// GetUserTasks retrieves all tasks for a user
+	GetUserTasks(userID uuid.UUID) ([]*entities.Task, error)
 
 	GetUserTasksWithFilters(userID uuid.UUID, domain, status, timeFilter string) ([]*entities.Task, error)
 

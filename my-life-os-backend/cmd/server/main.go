@@ -27,21 +27,24 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations
-	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}); err != nil {
+	// Run migrations (User + RefreshToken + Task)
+	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}, &entities.Task{}); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
 
-	// Initialize repositories
+	// Initialize Repositories (Data Layer)
 	userRepo := postgres.NewUserRepository(db)
 	tokenRepo := postgres.NewTokenRepository(db)
+	taskRepo := postgres.NewTaskRepository(db)
 
-	// Initialize services
+	// Initialize Services (Business Logic Layer)
 	authService := service.NewAuthService(userRepo, tokenRepo, cfg.JWTSecret)
+	taskService := service.NewTaskService(taskRepo)
 
 	// Initialize Handlers (HTTP Layer)
 	isDev := cfg.Environment == "development"
 	authHdl := authHandler.NewAuthHandler(authService, isDev)
+	taskHdl := authHandler.NewTaskHandler(taskService)
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
@@ -90,17 +93,20 @@ func main() {
 	auth.Post("/logout", middleware.AuthMiddleware(authService), authHdl.Logout)
 	auth.Get("/me", middleware.AuthMiddleware(authService), authHdl.GetMe)
 
-	// Protected API routes (will be added in next sprints)
-	// Example:
-	// tasks := api.Group("/tasks", middleware.AuthMiddleware(authService))
-	// tasks.Get("/", taskHandler.GetAll)
-	// tasks.Post("/", taskHandler.Create)
+	// Task routes (protected - require authentication)
+	tasks := api.Group("/tasks", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	tasks.Get("/", taskHdl.GetTasks)                     // GET /api/tasks (with optional filters)
+	tasks.Post("/", taskHdl.CreateTask)                  // POST /api/tasks
+	tasks.Get("/:id", taskHdl.GetTask)                   // GET /api/tasks/:id
+	tasks.Put("/:id", taskHdl.UpdateTask)                // PUT /api/tasks/:id
+	tasks.Patch("/:id/status", taskHdl.ToggleTaskStatus) // PATCH /api/tasks/:id/status
+	tasks.Delete("/:id", taskHdl.DeleteTask)             // DELETE /api/tasks/:id
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)
 	log.Printf("Environment: %s", cfg.Environment)
 	log.Printf("JWT Secret: %s... (hidden)", cfg.JWTSecret[:10])
-	
+
 	if err := app.Listen(":" + cfg.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

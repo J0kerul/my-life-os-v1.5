@@ -100,7 +100,7 @@ func ValidateRefreshToken(tokenString, secret string) (*CustomClaims, error) {
 
 // validateToken is a helper function that validates any JWT token
 func validateToken(tokenString, secret string) (*CustomClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (any, error) {
 		// Verify signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")

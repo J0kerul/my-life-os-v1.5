@@ -100,8 +100,8 @@ func (s *taskService) GetTask(taskID, userID uuid.UUID) (*entities.Task, error) 
 	return task, nil
 }
 
-// GetsUserTasks retrieves all tasks for a user
-func (s *taskService) GetsUserTasks(userID uuid.UUID) ([]*entities.Task, error) {
+// GetUserTasks retrieves all tasks for a user
+func (s *taskService) GetUserTasks(userID uuid.UUID) ([]*entities.Task, error) {
 	return s.taskRepo.FindTasksByUserID(userID)
 }
 

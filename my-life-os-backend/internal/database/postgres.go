@@ -18,15 +18,15 @@ func Connect(databaseURL string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	log.Println("✅ Database connected successfully")
+	log.Println("Database connected successfully")
 	return db, nil
 }
 
-func AutoMigrate(db *gorm.DB, models ...interface{}) error {
+func AutoMigrate(db *gorm.DB, models ...any) error {
 	if err := db.AutoMigrate(models...); err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	log.Println("✅ Database migrations completed")
+	log.Println("Database migrations completed")
 	return nil
 }
