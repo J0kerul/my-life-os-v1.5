@@ -14,8 +14,11 @@ type TaskRepository interface {
 	// FindTaskByID retrieves a task by its ID.
 	FindTaskByID(taskID uuid.UUID) (*entities.Task, error)
 
+	// FindByUserID retrieves all tasks for a user
+	FindTasksByUserID(userID uuid.UUID) ([]*entities.Task, error)
+
 	// FindByUserIDAndFilters retrieves tasks with filters
-	FindTaskByUserIDAndFilters(userID uuid.UUID, filters map[string]any) ([]*entities.Task, error)
+	FindTasksByUserIDAndFilters(userID uuid.UUID, filters map[string]any) ([]*entities.Task, error)
 
 	// UpdateTask modifies an existing task.
 	UpdateTask(task *entities.Task) error

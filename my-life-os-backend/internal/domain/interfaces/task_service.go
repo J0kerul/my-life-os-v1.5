@@ -12,7 +12,7 @@ type TaskService interface {
 	CreateTask(userID uuid.UUID, title, description, priority, domain string, deadline *string) (*entities.Task, error)
 
 	// GetTask retrieves a single task by its ID for a user
-	GetTask(userID, taskID uuid.UUID) (*entities.Task, error)
+	GetTask(taskID, userID uuid.UUID) (*entities.Task, error)
 
 	// GetsUserTasks retrieves all tasks for a user
 	GetsUserTasks(userID uuid.UUID) ([]*entities.Task, error)
@@ -20,11 +20,11 @@ type TaskService interface {
 	GetUserTasksWithFilters(userID uuid.UUID, domain, status, timeFilter string) ([]*entities.Task, error)
 
 	// UpdateTask updates an existing task for a user
-	UpdateTask(userID, taskID uuid.UUID, title, description, priority, domain string, deadline *string) (*entities.Task, error)
+	UpdateTask(taskID, userID uuid.UUID, title, description, priority, domain string, deadline *string) (*entities.Task, error)
 
 	// ToggleTaskStatus toggles the completion status of a task for a user
-	ToggleTaskStatus(userID, taskID uuid.UUID) (*entities.Task, error)
+	ToggleTaskStatus(taskID, userID uuid.UUID) (*entities.Task, error)
 
 	// DeleteTask removes a task by its ID for a user
-	DeleteTask(userID, taskID uuid.UUID) error
+	DeleteTask(taskID, userID uuid.UUID) error
 }
