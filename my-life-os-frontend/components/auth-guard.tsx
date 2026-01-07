@@ -15,24 +15,34 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     const verifyAuth = async () => {
+      console.log("🔐 AuthGuard: Starting verification...");
       try {
-        // Check if user is authenticated by calling backend
+        // ALWAYS check with backend - NEVER trust localStorage!
         await checkAuth();
+        
+        // After backend check, verify the state was actually set
+        const currentState = useAuthStore.getState().isAuthenticated;
+        console.log("🔐 AuthGuard: Backend check complete. isAuthenticated =", currentState);
+        
+        if (!currentState) {
+          // Backend rejected - redirect to homepage (will check if setup needed)
+          console.log("🔐 AuthGuard: Not authenticated, redirecting to homepage");
+          router.push("/");
+        } else {
+          console.log("🔐 AuthGuard: Authenticated! Rendering page.");
+        }
       } catch (error) {
-        // Not authenticated, redirect to login
-        router.push("/login");
+        // Auth check failed - redirect to homepage (will check if setup needed)
+        console.error("🔐 AuthGuard: Auth verification failed:", error);
+        router.push("/");
       } finally {
         setIsChecking(false);
       }
     };
 
-    // Only check if not already authenticated
-    if (!isAuthenticated) {
-      verifyAuth();
-    } else {
-      setIsChecking(false);
-    }
-  }, [isAuthenticated, checkAuth, router]);
+    // ALWAYS verify with backend, even if localStorage says authenticated
+    verifyAuth();
+  }, [checkAuth, router]);
 
   // Show loading state while checking authentication
   if (isChecking) {
@@ -40,17 +50,18 @@ export function AuthGuard({ children }: AuthGuardProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Verifying authentication...</p>
         </div>
       </div>
     );
   }
 
-  // If authenticated, render children
-  if (isAuthenticated) {
-    return <>{children}</>;
+  // After verification, check auth state one more time
+  if (!isAuthenticated) {
+    // Not authenticated - don't render anything (redirect is happening)
+    return null;
   }
 
-  // If not authenticated, don't render anything (will redirect)
-  return null;
+  // Verified and authenticated - render children
+  return <>{children}</>;
 }

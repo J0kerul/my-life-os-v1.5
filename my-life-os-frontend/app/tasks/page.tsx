@@ -4,16 +4,19 @@ import { useEffect, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { BurgerMenu } from "@/components/burger-menu";
 import { Sidebar } from "@/components/sidebar";
+import { QuickAddDialog } from "@/components/tasks/quick-add-dialog";
+import { TaskList } from "@/components/tasks/task-list";
 import { useTaskStore } from "@/lib/store/task-store";
 
 export default function TasksPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { fetchTasksWithFilters, timeFilter } = useTaskStore();
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const { fetchTasksWithFilters } = useTaskStore();
 
   useEffect(() => {
-    // Fetch tasks on mount with default filter (next_week)
-    fetchTasksWithFilters(undefined, undefined, timeFilter || undefined);
-  }, [fetchTasksWithFilters, timeFilter]);
+    // Fetch ALL tasks without filter for debugging
+    fetchTasksWithFilters(undefined, undefined, undefined);
+  }, [fetchTasksWithFilters]);
 
   return (
     <AuthGuard>
@@ -22,6 +25,12 @@ export default function TasksPage() {
 
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      {/* Quick Add Dialog */}
+      <QuickAddDialog
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+      />
 
       {/* Main Content - mehr padding rechts */}
       <div className="min-h-screen py-8 pl-36 pr-48">
@@ -37,14 +46,16 @@ export default function TasksPage() {
           <main className="flex-1 min-w-0 bg-background border-y-2 border-muted-foreground/20 p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold">Tasks</h1>
-              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+              <button
+                onClick={() => setIsQuickAddOpen(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
                 + New Task
               </button>
             </div>
             
-            <div className="space-y-2">
-              <p className="text-muted-foreground">Task list coming soon...</p>
-            </div>
+            {/* Task List */}
+            <TaskList />
           </main>
 
           {/* Right: Task Details (450px) - rund RECHTS, fixed height */}

@@ -25,7 +25,9 @@ async function apiCall<T>(
 
   if (!response.ok) {
     const error: ApiError = await response.json();
-    throw new Error(error.error || "An error occurred");
+    const err = new Error(error.error || "An error occurred") as Error & { status: number };
+    err.status = response.status;
+    throw err;
   }
 
   return response.json();
@@ -73,7 +75,22 @@ export async function logoutUser(): Promise<{ message: string }> {
   });
 }
 
-// Get current user
+// Get current user (with auto-retry on 401)
 export async function getCurrentUser(): Promise<{ id: string }> {
-  return apiCall<{ id: string }>("/auth/me");
+  try {
+    return await apiCall<{ id: string }>("/auth/me");
+  } catch (error) {
+    // If 401 Unauthorized, try refreshing token and retry once
+    if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+      try {
+        await refreshToken();
+        // Retry after successful refresh
+        return await apiCall<{ id: string }>("/auth/me");
+      } catch (refreshError) {
+        // Refresh failed, re-throw original error
+        throw error;
+      }
+    }
+    throw error;
+  }
 }

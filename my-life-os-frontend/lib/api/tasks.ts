@@ -11,6 +11,45 @@ import type {
 
 const API_BASE = "/api";
 
+// Helper: Refresh token if needed
+async function refreshTokenIfNeeded(): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
+    
+    if (!response.ok) {
+      throw new Error("Token refresh failed");
+    }
+  } catch (error) {
+    // Refresh failed - user needs to login again
+    window.location.href = "/login";
+    throw error;
+  }
+}
+
+// Helper: Fetch with auto-retry on 401
+async function fetchWithAuth(url: string, options: RequestInit): Promise<Response> {
+  let response = await fetch(url, {
+    ...options,
+    credentials: "include",
+  });
+
+  // If 401 (Unauthorized), try refreshing token and retry once
+  if (response.status === 401) {
+    await refreshTokenIfNeeded();
+    
+    // Retry original request
+    response = await fetch(url, {
+      ...options,
+      credentials: "include",
+    });
+  }
+
+  return response;
+}
+
 // Get all tasks with optional filters
 export async function getTasks(
   domain?: TaskDomain,
@@ -25,12 +64,11 @@ export async function getTasks(
   const queryString = params.toString();
   const url = `${API_BASE}/tasks${queryString ? `?${queryString}` : ""}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithAuth(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // Include cookies
   });
 
   if (!response.ok) {
@@ -44,12 +82,11 @@ export async function getTasks(
 
 // Get single task
 export async function getTask(taskId: string): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+  const response = await fetchWithAuth(`${API_BASE}/tasks/${taskId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
   });
 
   if (!response.ok) {
@@ -65,12 +102,11 @@ export async function getTask(taskId: string): Promise<Task> {
 export async function createTask(
   taskData: CreateTaskRequest
 ): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks`, {
+  const response = await fetchWithAuth(`${API_BASE}/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify(taskData),
   });
 
@@ -88,12 +124,11 @@ export async function updateTask(
   taskId: string,
   taskData: UpdateTaskRequest
 ): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+  const response = await fetchWithAuth(`${API_BASE}/tasks/${taskId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify(taskData),
   });
 
@@ -108,12 +143,11 @@ export async function updateTask(
 
 // Toggle task status (Todo <-> Done)
 export async function toggleTaskStatus(taskId: string): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}/status`, {
+  const response = await fetchWithAuth(`${API_BASE}/tasks/${taskId}/status`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
   });
 
   if (!response.ok) {
@@ -127,12 +161,11 @@ export async function toggleTaskStatus(taskId: string): Promise<Task> {
 
 // Delete task
 export async function deleteTask(taskId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+  const response = await fetchWithAuth(`${API_BASE}/tasks/${taskId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
   });
 
   if (!response.ok) {

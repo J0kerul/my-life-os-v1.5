@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      isAuthenticated: false,
+      isAuthenticated: false, // ALWAYS starts false - must be verified by backend
       isLoading: false,
 
       // Set user and update authentication status
@@ -80,21 +80,24 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
         } catch (error) {
-          // Not authenticated or token expired
+          // Not authenticated or token expired - clear state and throw error
           set({
             user: null,
             isAuthenticated: false,
             isLoading: false,
           });
+          // Re-throw error so AuthGuard can handle it
+          throw error;
         }
       },
     }),
     {
       name: "auth-storage", // localStorage key
-      // Only persist user and isAuthenticated, not isLoading
+      // CRITICAL SECURITY: Only persist user data, NOT isAuthenticated!
+      // isAuthenticated must ALWAYS be verified with backend on app load
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
+        // Do NOT persist isAuthenticated - it will be set by checkAuth()
       }),
     }
   )
