@@ -53,7 +53,7 @@ export function TaskList() {
           {tasksWithDeadline.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                ⏰ Time Sensitive Tasks ({tasksWithDeadline.length})
+                ⏰ Time Sensitive ({tasksWithDeadline.length})
               </h3>
               <div className="space-y-2">
                 {tasksWithDeadline.map((task) => (

@@ -9,7 +9,7 @@ import {
   Flag, 
   Trash2, 
   X,
-  Circle,
+  ClipboardList,
   Save
 } from "lucide-react";
 import { format } from "date-fns";
@@ -95,7 +95,7 @@ export function TaskDetailView() {
   if (!selectedTask) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <Circle className="w-16 h-16 text-muted-foreground/20 mb-4" />
+        <ClipboardList className="w-16 h-16 text-muted-foreground/20 mb-4" />
         <h3 className="text-lg font-medium text-muted-foreground mb-2">No task selected</h3>
         <p className="text-sm text-muted-foreground">
           Select a task to view details
@@ -142,7 +142,7 @@ export function TaskDetailView() {
 
         {/* Priority */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
             <Flag className="w-3 h-3" />
             Priority
           </label>
@@ -170,7 +170,7 @@ export function TaskDetailView() {
 
         {/* Domain */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
             <Tag className="w-3 h-3" />
             Domain
           </label>
@@ -195,7 +195,7 @@ export function TaskDetailView() {
 
         {/* Deadline */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
             <Calendar className="w-3 h-3" />
             Deadline
           </label>
