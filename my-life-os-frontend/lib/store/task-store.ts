@@ -7,7 +7,13 @@ import type {
   TaskStatus,
   TimeFilter,
 } from "@/types";
-import * as taskApi from "@/lib/api/tasks";
+import { 
+  getTasks as apiGetTasks, 
+  createTask as apiCreateTask, 
+  updateTask as apiUpdateTask, 
+  toggleTaskStatus as apiToggleTaskStatus, 
+  deleteTask as apiDeleteTask 
+} from "@/lib/api/tasks";
 
 interface TaskState {
   // State
@@ -26,7 +32,7 @@ interface TaskState {
   fetchTasksWithFilters: (
     domain?: TaskDomain,
     status?: TaskStatus,
-    timeFilter?: TimeFilter
+    timeFilter?: TimeFilter | null
   ) => Promise<void>;
   selectTask: (task: Task | null) => void;
   createTask: (taskData: CreateTaskRequest) => Promise<Task>;
@@ -46,14 +52,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   isLoading: false,
   error: null,
   domainFilter: null,
-  statusFilter: null,
-  timeFilter: "next_week", // Default filter
+  statusFilter: null, // Default: Show all tasks (Todo + Done)
+  timeFilter: null, // Default: Show all tasks
 
   // Fetch all tasks (no filters)
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
     try {
-      const tasks = await taskApi.getTasks();
+      const tasks = await apiGetTasks();
       set({ tasks, isLoading: false });
     } catch (error) {
       set({
@@ -67,7 +73,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   fetchTasksWithFilters: async (domain?, status?, timeFilter?) => {
     set({ isLoading: true, error: null });
     try {
-      const tasks = await taskApi.getTasks(domain, status, timeFilter);
+      const tasks = await apiGetTasks(domain, status, timeFilter);
       set({ tasks, isLoading: false });
     } catch (error) {
       set({
@@ -86,7 +92,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   createTask: async (taskData) => {
     set({ isLoading: true, error: null });
     try {
-      const newTask = await taskApi.createTask(taskData);
+      const newTask = await apiCreateTask(taskData);
       set((state) => ({
         tasks: [newTask, ...state.tasks],
         selectedTask: newTask,
@@ -106,7 +112,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   updateTask: async (taskId, taskData) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedTask = await taskApi.updateTask(taskId, taskData);
+      const updatedTask = await apiUpdateTask(taskId, taskData);
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
         selectedTask:
@@ -126,7 +132,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   // Toggle task status (Todo <-> Done)
   toggleTaskStatus: async (taskId) => {
     try {
-      const updatedTask = await taskApi.toggleTaskStatus(taskId);
+      const updatedTask = await apiToggleTaskStatus(taskId);
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
         selectedTask:
@@ -145,7 +151,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   deleteTask: async (taskId) => {
     set({ isLoading: true, error: null });
     try {
-      await taskApi.deleteTask(taskId);
+      await apiDeleteTask(taskId);
       set((state) => ({
         tasks: state.tasks.filter((t) => t.id !== taskId),
         selectedTask:
@@ -165,23 +171,23 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   setDomainFilter: (domain) => {
     set({ domainFilter: domain });
     const { statusFilter, timeFilter } = get();
-    get().fetchTasksWithFilters(domain || undefined, statusFilter || undefined, timeFilter || undefined);
+    get().fetchTasksWithFilters(domain || undefined, statusFilter || undefined, timeFilter);
   },
 
   setStatusFilter: (status) => {
     set({ statusFilter: status });
     const { domainFilter, timeFilter } = get();
-    get().fetchTasksWithFilters(domainFilter || undefined, status || undefined, timeFilter || undefined);
+    get().fetchTasksWithFilters(domainFilter || undefined, status || undefined, timeFilter);
   },
 
   setTimeFilter: (timeFilter) => {
     set({ timeFilter });
     const { domainFilter, statusFilter } = get();
-    get().fetchTasksWithFilters(domainFilter || undefined, statusFilter || undefined, timeFilter || undefined);
+    get().fetchTasksWithFilters(domainFilter || undefined, statusFilter || undefined, timeFilter);
   },
 
   clearFilters: () => {
-    set({ domainFilter: null, statusFilter: null, timeFilter: "next_week" });
-    get().fetchTasks();
+    set({ domainFilter: null, statusFilter: null, timeFilter: null });
+    get().fetchTasksWithFilters(undefined, undefined, null);
   },
 }));

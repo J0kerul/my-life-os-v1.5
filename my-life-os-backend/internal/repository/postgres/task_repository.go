@@ -1,49 +1,54 @@
 package postgres
 
 import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-
 	"github.com/J0kerul/my-life-os-v1.5/my-life-os-backend/internal/domain/entities"
 	"github.com/J0kerul/my-life-os-v1.5/my-life-os-backend/internal/domain/interfaces"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type taskRepository struct {
 	db *gorm.DB
 }
 
-// NewTaskRepository creates a new instance of TaskRepository
+// NewTaskRepository creates a new task repository
 func NewTaskRepository(db *gorm.DB) interfaces.TaskRepository {
 	return &taskRepository{db: db}
 }
 
-// CreateTask adds a new task to the database.
+// Create creates a new task
 func (r *taskRepository) CreateTask(task *entities.Task) error {
 	return r.db.Create(task).Error
 }
 
-// FindTaskByID retrieves a task by its ID.
-func (r *taskRepository) FindTaskByID(taskID uuid.UUID) (*entities.Task, error) {
+// FindByID retrieves a task by ID
+func (r *taskRepository) FindTaskByID(id uuid.UUID) (*entities.Task, error) {
 	var task entities.Task
-	err := r.db.Where("id = ?", taskID).First(&task).Error
+	err := r.db.Where("id = ?", id).First(&task).Error
 	if err != nil {
 		return nil, err
 	}
 	return &task, nil
 }
 
-// FindTaskByUserID retrieves all tasks for a user
+// FindByUserID retrieves all tasks for a user
 func (r *taskRepository) FindTasksByUserID(userID uuid.UUID) ([]*entities.Task, error) {
 	var tasks []*entities.Task
-	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Find(&tasks).Error
+	// Order by deadline ascending (closest first), NULL deadlines last
+	err := r.db.Where("user_id = ?", userID).
+		Order("CASE WHEN deadline IS NULL THEN 1 ELSE 0 END"). // NULLs last
+		Order("deadline ASC").                                 // Closest deadline first
+		Order("created_at DESC").                              // Then by creation date
+		Find(&tasks).Error
 	if err != nil {
 		return nil, err
 	}
 	return tasks, nil
 }
 
-// FindTasksByUserIDAndFilters retrieves tasks with filters
-func (r *taskRepository) FindTasksByUserIDAndFilters(userID uuid.UUID, filters map[string]any) ([]*entities.Task, error) {
+// FindByUserIDAndFilters retrieves tasks with filters
+func (r *taskRepository) FindTasksByUserIDAndFilters(userID uuid.UUID, filters map[string]interface{}) ([]*entities.Task, error) {
 	var tasks []*entities.Task
 	query := r.db.Where("user_id = ?", userID)
 
@@ -59,16 +64,17 @@ func (r *taskRepository) FindTasksByUserIDAndFilters(userID uuid.UUID, filters m
 	return tasks, nil
 }
 
-// UpdateTask modifies an existing task.
+// Update updates a task
 func (r *taskRepository) UpdateTask(task *entities.Task) error {
 	return r.db.Save(task).Error
 }
 
-func (r *taskRepository) UpdateStatus(taskID uuid.UUID, status string) error {
-	return r.db.Model(&entities.Task{}).Where("id = ?", taskID).Update("status", status).Error
+// UpdateStatus updates only the task status
+func (r *taskRepository) UpdateStatus(id uuid.UUID, status string) error {
+	return r.db.Model(&entities.Task{}).Where("id = ?", id).Update("status", status).Error
 }
 
-// DeleteTask removes a task from the database.
-func (r *taskRepository) DeleteTask(taskID uuid.UUID) error {
-	return r.db.Where("id = ?", taskID).Delete(&entities.Task{}).Error
+// Delete deletes a task
+func (r *taskRepository) DeleteTask(id uuid.UUID) error {
+	return r.db.Delete(&entities.Task{}, id).Error
 }

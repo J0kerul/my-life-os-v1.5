@@ -54,7 +54,7 @@ async function fetchWithAuth(url: string, options: RequestInit): Promise<Respons
 export async function getTasks(
   domain?: TaskDomain,
   status?: TaskStatus,
-  timeFilter?: TimeFilter
+  timeFilter?: TimeFilter | null
 ): Promise<Task[]> {
   const params = new URLSearchParams();
   if (domain) params.append("domain", domain);

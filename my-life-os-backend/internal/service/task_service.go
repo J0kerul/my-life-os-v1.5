@@ -4,19 +4,21 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/J0kerul/my-life-os-v1.5/my-life-os-backend/internal/domain/entities"
 	"github.com/J0kerul/my-life-os-v1.5/my-life-os-backend/internal/domain/interfaces"
+
+	"github.com/google/uuid"
 )
 
 type taskService struct {
 	taskRepo interfaces.TaskRepository
 }
 
-// NewTaskService creates a new instance of TaskService
+// NewTaskService creates a new task service
 func NewTaskService(taskRepo interfaces.TaskRepository) interfaces.TaskService {
-	return &taskService{taskRepo: taskRepo}
+	return &taskService{
+		taskRepo: taskRepo,
+	}
 }
 
 // CreateTask creates a new task
@@ -85,14 +87,14 @@ func (s *taskService) CreateTask(userID uuid.UUID, title, description, priority,
 	return task, nil
 }
 
-// GetTask retrieves a task by its ID
+// GetTask retrieves a single task (ensures user owns it)
 func (s *taskService) GetTask(taskID, userID uuid.UUID) (*entities.Task, error) {
 	task, err := s.taskRepo.FindTaskByID(taskID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Verifiy Ownership
+	// Verify ownership
 	if task.UserID != userID {
 		return nil, errors.New("unauthorized: task does not belong to user")
 	}
@@ -105,7 +107,7 @@ func (s *taskService) GetUserTasks(userID uuid.UUID) ([]*entities.Task, error) {
 	return s.taskRepo.FindTasksByUserID(userID)
 }
 
-// GetUserTasksWithFilters retrieves tasks for a user with optional filters
+// GetUserTasksWithFilters retrieves tasks with filters
 func (s *taskService) GetUserTasksWithFilters(userID uuid.UUID, domain, status, timeFilter string) ([]*entities.Task, error) {
 	// Get all user tasks first
 	allTasks, err := s.taskRepo.FindTasksByUserID(userID)
@@ -127,7 +129,7 @@ func (s *taskService) GetUserTasksWithFilters(userID uuid.UUID, domain, status, 
 			continue
 		}
 
-		// Time filter
+		// Time filter (Long Term, Morgen, Next Week, Next Month)
 		if timeFilter != "" {
 			if !s.matchesTimeFilter(task, timeFilter) {
 				continue
@@ -138,6 +140,55 @@ func (s *taskService) GetUserTasksWithFilters(userID uuid.UUID, domain, status, 
 	}
 
 	return filteredTasks, nil
+}
+
+// matchesTimeFilter checks if task matches time filter
+func (s *taskService) matchesTimeFilter(task *entities.Task, timeFilter string) bool {
+	now := time.Now()
+
+	switch timeFilter {
+	case "long_term":
+		// Tasks with no deadline
+		return task.Deadline == nil
+
+	case "today":
+		// Tasks due today
+		if task.Deadline == nil {
+			return false
+		}
+		todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		tomorrowStart := todayStart.Add(24 * time.Hour)
+		return task.Deadline.After(todayStart) && task.Deadline.Before(tomorrowStart)
+
+	case "tomorrow":
+		// Tasks due tomorrow
+		if task.Deadline == nil {
+			return false
+		}
+		tomorrow := now.AddDate(0, 0, 1)
+		tomorrowStart := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, tomorrow.Location())
+		tomorrowEnd := tomorrowStart.Add(24 * time.Hour)
+		return task.Deadline.After(tomorrowStart) && task.Deadline.Before(tomorrowEnd)
+
+	case "next_week":
+		// Tasks due in next 7 days (rolling window from today)
+		if task.Deadline == nil {
+			return false
+		}
+		nextWeekEnd := now.AddDate(0, 0, 7)
+		return task.Deadline.After(now) && task.Deadline.Before(nextWeekEnd)
+
+	case "next_month":
+		// Tasks due in next 30 days (rolling window from today)
+		if task.Deadline == nil {
+			return false
+		}
+		nextMonthEnd := now.AddDate(0, 0, 30)
+		return task.Deadline.After(now) && task.Deadline.Before(nextMonthEnd)
+
+	default:
+		return true
+	}
 }
 
 // UpdateTask updates a task
@@ -241,44 +292,4 @@ func (s *taskService) DeleteTask(taskID, userID uuid.UUID) error {
 	}
 
 	return s.taskRepo.DeleteTask(taskID)
-}
-
-// matchesTimeFilter checks if task matches time filter
-func (s *taskService) matchesTimeFilter(task *entities.Task, timeFilter string) bool {
-	now := time.Now()
-
-	switch timeFilter {
-	case "long_term":
-		// Tasks with no deadline
-		return task.Deadline == nil
-
-	case "tomorrow":
-		// Tasks due tomorrow
-		if task.Deadline == nil {
-			return false
-		}
-		tomorrow := now.AddDate(0, 0, 1)
-		tomorrowStart := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, tomorrow.Location())
-		tomorrowEnd := tomorrowStart.Add(24 * time.Hour)
-		return task.Deadline.After(tomorrowStart) && task.Deadline.Before(tomorrowEnd)
-
-	case "next_week":
-		// Tasks due in next 7 days (rolling window from today)
-		if task.Deadline == nil {
-			return false
-		}
-		nextWeekEnd := now.AddDate(0, 0, 7)
-		return task.Deadline.After(now) && task.Deadline.Before(nextWeekEnd)
-
-	case "next_month":
-		// Tasks due in next 30 days (rolling window from today)
-		if task.Deadline == nil {
-			return false
-		}
-		nextMonthEnd := now.AddDate(0, 0, 30)
-		return task.Deadline.After(now) && task.Deadline.Before(nextMonthEnd)
-
-	default:
-		return true
-	}
 }

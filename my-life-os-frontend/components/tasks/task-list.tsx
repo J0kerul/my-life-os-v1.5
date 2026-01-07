@@ -4,7 +4,7 @@ import { useTaskStore } from "@/lib/store/task-store";
 import { TaskItem } from "./task-item";
 
 export function TaskList() {
-  const { tasks, isLoading } = useTaskStore();
+  const { tasks, isLoading, timeFilter } = useTaskStore();
 
   if (isLoading) {
     return (
@@ -29,6 +29,11 @@ export function TaskList() {
   const completedCount = tasks.filter((t) => t.status === "Done").length;
   const totalCount = tasks.length;
 
+  // If showing all tasks, group by deadline
+  const showGrouping = timeFilter === null;
+  const tasksWithDeadline = showGrouping ? tasks.filter((t) => t.deadline) : [];
+  const tasksLongTerm = showGrouping ? tasks.filter((t) => !t.deadline) : [];
+
   return (
     <div className="space-y-4">
       {/* Progress Stats */}
@@ -41,12 +46,45 @@ export function TaskList() {
         )}
       </div>
 
-      {/* Task Items */}
-      <div className="space-y-2">
-        {tasks.map((task) => (
-          <TaskItem key={task.id} task={task} />
-        ))}
-      </div>
+      {/* Task Items - Grouped or Flat */}
+      {showGrouping ? (
+        <>
+          {/* Tasks with Deadline */}
+          {tasksWithDeadline.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                ⏰ Time Sensitive Tasks ({tasksWithDeadline.length})
+              </h3>
+              <div className="space-y-2">
+                {tasksWithDeadline.map((task) => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Long Term Tasks */}
+          {tasksLongTerm.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                📋 Long Term ({tasksLongTerm.length})
+              </h3>
+              <div className="space-y-2">
+                {tasksLongTerm.map((task) => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        // Flat list when time filter is active
+        <div className="space-y-2">
+          {tasks.map((task) => (
+            <TaskItem key={task.id} task={task} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

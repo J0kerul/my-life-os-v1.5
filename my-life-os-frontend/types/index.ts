@@ -32,6 +32,16 @@ export interface StatusResponse {
 }
 
 // ============================================
+// API ERROR TYPES
+// ============================================
+
+export interface ApiError {
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
+
+// ============================================
 // TASK TYPES (Sprint 3)
 // ============================================
 
@@ -47,7 +57,8 @@ export type TaskDomain =
   | "Household"
   | "Health";
 
-export type TimeFilter = "long_term" | "tomorrow" | "next_week" | "next_month";
+// Time filters for task filtering
+export type TimeFilter = "long_term" | "today" | "tomorrow" | "next_week" | "next_month";
 
 export interface Task {
   id: string;
@@ -85,14 +96,4 @@ export interface TasksResponse {
 export interface TaskResponse {
   task: Task;
   message?: string;
-}
-
-// ============================================
-// API ERROR TYPES
-// ============================================
-
-export interface ApiError {
-  error: string;
-  code?: string;
-  details?: Record<string, unknown>;
 }
