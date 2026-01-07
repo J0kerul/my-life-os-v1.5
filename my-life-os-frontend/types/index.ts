@@ -32,6 +32,62 @@ export interface StatusResponse {
 }
 
 // ============================================
+// TASK TYPES (Sprint 3)
+// ============================================
+
+export type TaskPriority = "Low" | "Medium" | "High";
+export type TaskStatus = "Todo" | "Done";
+export type TaskDomain = 
+  | "Work"
+  | "University"
+  | "Coding Project"
+  | "Personal Project"
+  | "Goals"
+  | "Finances"
+  | "Household"
+  | "Health";
+
+export type TimeFilter = "long_term" | "tomorrow" | "next_week" | "next_month";
+
+export interface Task {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  domain: TaskDomain;
+  deadline: string | null; // ISO 8601 format
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaskRequest {
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  domain: TaskDomain;
+  deadline?: string | null;
+}
+
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  priority?: TaskPriority;
+  domain?: TaskDomain;
+  deadline?: string | null;
+}
+
+export interface TasksResponse {
+  tasks: Task[];
+}
+
+export interface TaskResponse {
+  task: Task;
+  message?: string;
+}
+
+// ============================================
 // API ERROR TYPES
 // ============================================
 
