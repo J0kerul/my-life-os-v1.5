@@ -140,57 +140,60 @@ export function TaskDetailView() {
           )}
         </div>
 
-        {/* Priority */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
-            <Flag className="w-3 h-3" />
-            Priority
-          </label>
-          {isEditing ? (
-            <select
-              value={editPriority}
-              onChange={(e) => setEditPriority(e.target.value as TaskPriority)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
-            >
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${priorityColor.bg}`}>
-              <span className={`text-lg ${priorityColor.text}`}>{priorityColor.icon}</span>
-              <span className={`text-sm font-medium ${priorityColor.text}`}>
-                {selectedTask.priority}
-              </span>
-            </div>
-          )}
-        </div>
+        {/* Priority & Domain - Side by Side */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Priority */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
+              <Flag className="w-3 h-3" />
+              Priority
+            </label>
+            {isEditing ? (
+              <select
+                value={editPriority}
+                onChange={(e) => setEditPriority(e.target.value as TaskPriority)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                {PRIORITIES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${priorityColor.bg}`}>
+                <span className={`text-lg ${priorityColor.text}`}>{priorityColor.icon}</span>
+                <span className={`text-sm font-medium ${priorityColor.text}`}>
+                  {selectedTask.priority}
+                </span>
+              </div>
+            )}
+          </div>
 
-        {/* Domain */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
-            <Tag className="w-3 h-3" />
-            Domain
-          </label>
-          {isEditing ? (
-            <select
-              value={editDomain}
-              onChange={(e) => setEditDomain(e.target.value as TaskDomain)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
-            >
-              {DOMAINS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              {selectedTask.domain}
-            </div>
-          )}
+          {/* Domain */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
+              <Tag className="w-3 h-3" />
+              Domain
+            </label>
+            {isEditing ? (
+              <select
+                value={editDomain}
+                onChange={(e) => setEditDomain(e.target.value as TaskDomain)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                {DOMAINS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm">
+                {selectedTask.domain}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Deadline */}
@@ -238,9 +241,17 @@ export function TaskDetailView() {
         </div>
 
         {/* Created/Updated Info */}
-        <div className="pt-4 border-t border-border text-xs text-muted-foreground space-y-1">
-          <div>Created: {format(new Date(selectedTask.createdAt), "PPp", { locale: de })}</div>
-          <div>Updated: {format(new Date(selectedTask.updatedAt), "PPp", { locale: de })}</div>
+        <div className="pt-4 border-t border-border">
+          <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+            <div>
+              <span className="font-medium">Created:</span>
+              <div className="mt-0.5">{format(new Date(selectedTask.createdAt), "PPp", { locale: de })}</div>
+            </div>
+            <div>
+              <span className="font-medium">Updated:</span>
+              <div className="mt-0.5">{format(new Date(selectedTask.updatedAt), "PPp", { locale: de })}</div>
+            </div>
+          </div>
         </div>
       </div>
 

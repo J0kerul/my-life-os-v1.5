@@ -29,10 +29,22 @@ export function TaskList() {
   const completedCount = tasks.filter((t) => t.status === "Done").length;
   const totalCount = tasks.length;
 
-  // If showing all tasks, group by deadline
+  // If showing all tasks, group by deadline and sort by status within groups
   const showGrouping = timeFilter === null;
-  const tasksWithDeadline = showGrouping ? tasks.filter((t) => t.deadline) : [];
-  const tasksLongTerm = showGrouping ? tasks.filter((t) => !t.deadline) : [];
+  
+  const sortByStatus = (a: typeof tasks[0], b: typeof tasks[0]) => {
+    // Todo tasks first, Done tasks last
+    if (a.status === "Todo" && b.status === "Done") return -1;
+    if (a.status === "Done" && b.status === "Todo") return 1;
+    return 0;
+  };
+  
+  const tasksWithDeadline = showGrouping 
+    ? tasks.filter((t) => t.deadline).sort(sortByStatus) 
+    : [];
+  const tasksLongTerm = showGrouping 
+    ? tasks.filter((t) => !t.deadline).sort(sortByStatus) 
+    : [];
 
   return (
     <div className="space-y-4">
