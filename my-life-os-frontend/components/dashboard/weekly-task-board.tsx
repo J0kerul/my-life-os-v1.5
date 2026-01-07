@@ -6,7 +6,7 @@ import type { TimeFilter } from "@/types";
 import { ChevronDown, ChevronUp, ClipboardCheck, Plus } from "lucide-react";
 import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
 import { QuickAddDialog } from "@/components/tasks/quick-add-dialog";
-import { isOverdue } from "@/lib/utils";
+import { formatDeadline, isOverdue } from "@/lib/utils";
 
 const TIME_FILTERS: { value: TimeFilter | null; label: string }[] = [
   { value: null, label: "All Tasks" },
@@ -133,7 +133,7 @@ export function WeeklyTaskBoard() {
                 </div>
               ) : (
                 todoTasks.map((task) => {
-                  const overdue = task.deadline ? isOverdue(task.deadline) : false;
+                  const deadlineInfo = task.deadline ? formatDeadline(task.deadline) : null;
                   
                   return (
                     <div
@@ -170,14 +170,11 @@ export function WeeklyTaskBoard() {
                           <span>{task.domain}</span>
                           
                           {/* Deadline */}
-                          {task.deadline && (
+                          {deadlineInfo && (
                             <>
                               <span>•</span>
-                              <span className={overdue ? "text-red-500 font-medium" : ""}>
-                                {new Date(task.deadline).toLocaleDateString("de-DE", {
-                                  day: "numeric",
-                                  month: "short"
-                                })}
+                              <span className={deadlineInfo.isRed ? "text-red-500 font-medium" : ""}>
+                                {deadlineInfo.text}
                               </span>
                             </>
                           )}
@@ -185,7 +182,7 @@ export function WeeklyTaskBoard() {
                       </div>
 
                       {/* Overdue badge */}
-                      {overdue && (
+                      {deadlineInfo?.showOverdue && (
                         <span className="px-2 py-0.5 bg-red-500/10 text-red-500 text-xs rounded-full flex-shrink-0">
                           Overdue
                         </span>

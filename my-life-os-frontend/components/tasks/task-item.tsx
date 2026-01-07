@@ -3,8 +3,7 @@
 import { ArrowUp, Minus, ArrowDown } from "lucide-react";
 import { useTaskStore } from "@/lib/store/task-store";
 import type { Task } from "@/types";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
+import { formatDeadline, isOverdue } from "@/lib/utils";
 
 interface TaskItemProps {
   task: Task;
@@ -14,7 +13,8 @@ export function TaskItem({ task }: TaskItemProps) {
   const { toggleTaskStatus, selectTask, selectedTask } = useTaskStore();
 
   const isSelected = selectedTask?.id === task.id;
-  const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status === "Todo";
+  const taskIsOverdue = task.deadline && isOverdue(task.deadline) && task.status === "Todo";
+  const deadlineInfo = task.deadline ? formatDeadline(task.deadline) : null;
 
   // Priority colors and icons
   const getPriorityStyles = () => {
@@ -41,24 +41,6 @@ export function TaskItem({ task }: TaskItemProps) {
   };
 
   const priorityStyles = getPriorityStyles();
-
-  // Format deadline
-  const formatDeadline = () => {
-    if (!task.deadline) return null;
-    const deadlineDate = new Date(task.deadline);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    if (deadlineDate.toDateString() === today.toDateString()) {
-      return "Heute";
-    } else if (deadlineDate.toDateString() === tomorrow.toDateString()) {
-      return "Morgen";
-    } else {
-      return format(deadlineDate, "dd. MMM", { locale: de });
-    }
-  };
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent selecting task
@@ -116,11 +98,11 @@ export function TaskItem({ task }: TaskItemProps) {
         </h3>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
           <span>{task.domain}</span>
-          {task.deadline && (
+          {deadlineInfo && (
             <>
               <span>•</span>
-              <span className={isOverdue ? "text-red-500 font-medium" : ""}>
-                {formatDeadline()}
+              <span className={deadlineInfo.isRed ? "text-red-500 font-medium" : ""}>
+                {deadlineInfo.text}
               </span>
             </>
           )}
@@ -128,9 +110,9 @@ export function TaskItem({ task }: TaskItemProps) {
       </div>
 
       {/* Overdue Indicator */}
-      {isOverdue && (
+      {taskIsOverdue && deadlineInfo?.showOverdue && (
         <div className="px-2 py-0.5 bg-red-500/20 text-red-500 text-xs font-medium rounded">
-          Überfällig
+          Overdue
         </div>
       )}
     </div>
