@@ -150,7 +150,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </button>
               {expandedSections.includes("productivity") && (
                 <div className="ml-8 mt-1 space-y-1">
-                  <button className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground">
+                  <button
+                    onClick={() => handleNavigation("/tasks")}
+                    className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+                  >
                     <CheckSquare className="w-4 h-4 text-primary" />
                     <span>Task Manager</span>
                   </button>

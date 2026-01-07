@@ -1,142 +1,187 @@
+import { create } from "zustand";
 import type {
   Task,
   CreateTaskRequest,
   UpdateTaskRequest,
-  TasksResponse,
-  TaskResponse,
   TaskDomain,
   TaskStatus,
   TimeFilter,
 } from "@/types";
+import * as taskApi from "@/lib/api/tasks";
 
-const API_BASE = "/api";
+interface TaskState {
+  // State
+  tasks: Task[];
+  selectedTask: Task | null;
+  isLoading: boolean;
+  error: string | null;
 
-// Get all tasks with optional filters
-export async function getTasks(
-  domain?: TaskDomain,
-  status?: TaskStatus,
-  timeFilter?: TimeFilter
-): Promise<Task[]> {
-  const params = new URLSearchParams();
-  if (domain) params.append("domain", domain);
-  if (status) params.append("status", status);
-  if (timeFilter) params.append("time_filter", timeFilter);
+  // Filters
+  domainFilter: TaskDomain | null;
+  statusFilter: TaskStatus | null;
+  timeFilter: TimeFilter | null;
 
-  const queryString = params.toString();
-  const url = `${API_BASE}/tasks${queryString ? `?${queryString}` : ""}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // Include cookies
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to fetch tasks");
-  }
-
-  const data: TasksResponse = await response.json();
-  return data.tasks || [];
+  // Actions
+  fetchTasks: () => Promise<void>;
+  fetchTasksWithFilters: (
+    domain?: TaskDomain,
+    status?: TaskStatus,
+    timeFilter?: TimeFilter
+  ) => Promise<void>;
+  selectTask: (task: Task | null) => void;
+  createTask: (taskData: CreateTaskRequest) => Promise<Task>;
+  updateTask: (taskId: string, taskData: UpdateTaskRequest) => Promise<Task>;
+  toggleTaskStatus: (taskId: string) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
+  setDomainFilter: (domain: TaskDomain | null) => void;
+  setStatusFilter: (status: TaskStatus | null) => void;
+  setTimeFilter: (timeFilter: TimeFilter | null) => void;
+  clearFilters: () => void;
 }
 
-// Get single task
-export async function getTask(taskId: string): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
+export const useTaskStore = create<TaskState>((set, get) => ({
+  // Initial state
+  tasks: [],
+  selectedTask: null,
+  isLoading: false,
+  error: null,
+  domainFilter: null,
+  statusFilter: null,
+  timeFilter: "next_week", // Default filter
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to fetch task");
-  }
+  // Fetch all tasks (no filters)
+  fetchTasks: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const tasks = await taskApi.getTasks();
+      set({ tasks, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to fetch tasks",
+        isLoading: false,
+      });
+    }
+  },
 
-  const data: TaskResponse = await response.json();
-  return data.task;
-}
+  // Fetch tasks with filters
+  fetchTasksWithFilters: async (domain?, status?, timeFilter?) => {
+    set({ isLoading: true, error: null });
+    try {
+      const tasks = await taskApi.getTasks(domain, status, timeFilter);
+      set({ tasks, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to fetch tasks",
+        isLoading: false,
+      });
+    }
+  },
 
-// Create new task
-export async function createTask(
-  taskData: CreateTaskRequest
-): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(taskData),
-  });
+  // Select a task for detail view
+  selectTask: (task) => {
+    set({ selectedTask: task });
+  },
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to create task");
-  }
+  // Create new task
+  createTask: async (taskData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newTask = await taskApi.createTask(taskData);
+      set((state) => ({
+        tasks: [newTask, ...state.tasks],
+        selectedTask: newTask,
+        isLoading: false,
+      }));
+      return newTask;
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to create task",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
 
-  const data: TaskResponse = await response.json();
-  return data.task;
-}
+  // Update task
+  updateTask: async (taskId, taskData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedTask = await taskApi.updateTask(taskId, taskData);
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
+        selectedTask:
+          state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
+        isLoading: false,
+      }));
+      return updatedTask;
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to update task",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
 
-// Update task
-export async function updateTask(
-  taskId: string,
-  taskData: UpdateTaskRequest
-): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(taskData),
-  });
+  // Toggle task status (Todo <-> Done)
+  toggleTaskStatus: async (taskId) => {
+    try {
+      const updatedTask = await taskApi.toggleTaskStatus(taskId);
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
+        selectedTask:
+          state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
+      }));
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : "Failed to toggle task status",
+      });
+      throw error;
+    }
+  },
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to update task");
-  }
+  // Delete task
+  deleteTask: async (taskId) => {
+    set({ isLoading: true, error: null });
+    try {
+      await taskApi.deleteTask(taskId);
+      set((state) => ({
+        tasks: state.tasks.filter((t) => t.id !== taskId),
+        selectedTask:
+          state.selectedTask?.id === taskId ? null : state.selectedTask,
+        isLoading: false,
+      }));
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to delete task",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
 
-  const data: TaskResponse = await response.json();
-  return data.task;
-}
+  // Set filters
+  setDomainFilter: (domain) => {
+    set({ domainFilter: domain });
+    const { statusFilter, timeFilter } = get();
+    get().fetchTasksWithFilters(domain || undefined, statusFilter || undefined, timeFilter || undefined);
+  },
 
-// Toggle task status (Todo <-> Done)
-export async function toggleTaskStatus(taskId: string): Promise<Task> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}/status`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
+  setStatusFilter: (status) => {
+    set({ statusFilter: status });
+    const { domainFilter, timeFilter } = get();
+    get().fetchTasksWithFilters(domainFilter || undefined, status || undefined, timeFilter || undefined);
+  },
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to toggle task status");
-  }
+  setTimeFilter: (timeFilter) => {
+    set({ timeFilter });
+    const { domainFilter, statusFilter } = get();
+    get().fetchTasksWithFilters(domainFilter || undefined, statusFilter || undefined, timeFilter || undefined);
+  },
 
-  const data: TaskResponse = await response.json();
-  return data.task;
-}
-
-// Delete task
-export async function deleteTask(taskId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to delete task");
-  }
-}
+  clearFilters: () => {
+    set({ domainFilter: null, statusFilter: null, timeFilter: "next_week" });
+    get().fetchTasks();
+  },
+}));
