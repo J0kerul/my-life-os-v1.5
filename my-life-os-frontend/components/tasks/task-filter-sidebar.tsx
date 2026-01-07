@@ -8,8 +8,8 @@ import { useState } from "react";
 const TIME_FILTERS: { value: TimeFilter | null; label: string }[] = [
   { value: null, label: "All Tasks" },
   { value: "long_term", label: "Long Term" },
-  { value: "today", label: "Heute" },
-  { value: "tomorrow", label: "Morgen" },
+  { value: "today", label: "Today" },
+  { value: "tomorrow", label: "Tomorrow" },
   { value: "next_week", label: "Next Week" },
   { value: "next_month", label: "Next Month" },
 ];

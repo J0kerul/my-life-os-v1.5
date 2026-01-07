@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { AuthGuard } from "@/components/auth-guard";
 import { BurgerMenu } from "@/components/burger-menu";
 import { Sidebar } from "@/components/sidebar";
+import { WeeklyTaskBoard } from "@/components/dashboard/weekly-task-board";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -71,11 +72,17 @@ export default function DashboardPage() {
         </div>
 
         {/* Content Container */}
-        <div className="px-8">
-          <div className="max-w-7xl mx-auto">
-            {/* Placeholder for Widgets */}
-            <div className="text-center py-20 text-muted-foreground">
-              <p className="text-xl font-light">Widgets coming soon...</p>
+        <div className="px-36 pr-16">
+          {/* 3-Column Grid */}
+          <div className="grid grid-cols-3 gap-6">
+            {/* Row 1: Weekly Task Board (Spans 2 columns) */}
+            <div className="col-span-2">
+              <WeeklyTaskBoard />
+            </div>
+            
+            {/* Column 3 - Placeholder for future widget */}
+            <div className="bg-card/30 border border-border/30 rounded-xl p-6 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Widget 2</p>
             </div>
           </div>
         </div>
