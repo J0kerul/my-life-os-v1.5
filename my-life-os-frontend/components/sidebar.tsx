@@ -29,6 +29,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  Repeat,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -144,7 +145,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 transition-transform ${
-                    expandedSections.includes("productivity") ? "rotate-180" : ""
+                    expandedSections.includes("productivity")
+                      ? "rotate-180"
+                      : ""
                   }`}
                 />
               </button>
@@ -225,6 +228,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </button>
               {expandedSections.includes("lifestyle") && (
                 <div className="ml-8 mt-1 space-y-1">
+                  <button
+                    onClick={() => handleNavigation("/routines")}
+                    className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+                  >
+                    <Repeat className="w-4 h-4 text-primary" />
+                    <span>Daily Routines</span>
+                  </button>
                   <button className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground">
                     <Dumbbell className="w-4 h-4 text-primary" />
                     <span>Workout Planner</span>
@@ -287,7 +297,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 transition-transform ${
-                    expandedSections.includes("entertainment") ? "rotate-180" : ""
+                    expandedSections.includes("entertainment")
+                      ? "rotate-180"
+                      : ""
                   }`}
                 />
               </button>
