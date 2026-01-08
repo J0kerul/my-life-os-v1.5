@@ -7,6 +7,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { BurgerMenu } from "@/components/burger-menu";
 import { Sidebar } from "@/components/sidebar";
 import { WeeklyTaskBoard } from "@/components/dashboard/weekly-task-board";
+import { TodaysRoutinesWidget } from "@/components/dashboard/todays-routines-widget";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -15,13 +16,18 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Widget expansion state - both widgets expand/collapse together
+  const [areWidgetsExpanded, setAreWidgetsExpanded] = useState(false);
+
   // Zeit-basierte Begrüßung
   const getGreeting = () => {
     const hour = new Date().getHours();
-    
-    if (hour >= 5 && hour < 11) return { text: "Guten Morgen", punctuation: "" };
+
+    if (hour >= 5 && hour < 11)
+      return { text: "Guten Morgen", punctuation: "" };
     if (hour >= 11 && hour < 18) return { text: "Guten Tag", punctuation: "" };
-    if (hour >= 18 && hour < 22) return { text: "Guten Abend", punctuation: "" };
+    if (hour >= 18 && hour < 22)
+      return { text: "Guten Abend", punctuation: "" };
     return { text: "Noch wach", punctuation: "?" };
   };
 
@@ -33,6 +39,10 @@ export default function DashboardPage() {
     const weekday = format(date, "EEEE", { locale: de });
     const rest = format(date, "d. MMMM yyyy", { locale: de });
     return `${weekday}, der ${rest}`;
+  };
+
+  const handleToggleWidgets = () => {
+    setAreWidgetsExpanded((prev) => !prev);
   };
 
   return (
@@ -66,7 +76,7 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-          
+
           {/* Gradient Line */}
           <div className="h-[2px] md:h-[3px] w-full bg-gradient-to-r from-gray-200 via-primary to-purple-500"></div>
         </div>
@@ -77,12 +87,18 @@ export default function DashboardPage() {
           <div className="grid grid-cols-3 gap-6">
             {/* Row 1: Weekly Task Board (Spans 2 columns) */}
             <div className="col-span-2">
-              <WeeklyTaskBoard />
+              <WeeklyTaskBoard
+                isExpanded={areWidgetsExpanded}
+                onToggleExpand={handleToggleWidgets}
+              />
             </div>
-            
-            {/* Column 3 - Placeholder for future widget */}
-            <div className="bg-card/30 border border-border/30 rounded-xl p-6 flex items-center justify-center">
-              <p className="text-sm text-muted-foreground">Widget 2</p>
+
+            {/* Column 3 - Today's Routines Widget */}
+            <div>
+              <TodaysRoutinesWidget
+                isExpanded={areWidgetsExpanded}
+                onToggleExpand={handleToggleWidgets}
+              />
             </div>
           </div>
         </div>

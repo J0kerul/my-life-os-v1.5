@@ -17,11 +17,18 @@ const TIME_FILTERS: { value: TimeFilter | null; label: string }[] = [
   { value: "long_term", label: "Long Term" },
 ];
 
-export function WeeklyTaskBoard() {
+interface WeeklyTaskBoardProps {
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}
+
+export function WeeklyTaskBoard({
+  isExpanded,
+  onToggleExpand,
+}: WeeklyTaskBoardProps) {
   const { tasks, fetchTasksWithFilters, toggleTaskStatus } = useTaskStore();
 
   // Widget state
-  const [isExpanded, setIsExpanded] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -86,7 +93,7 @@ export function WeeklyTaskBoard() {
 
             {/* Expand/Collapse Button */}
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={onToggleExpand}
               className="p-2 hover:bg-accent rounded-lg transition-colors"
             >
               {isExpanded ? (
@@ -100,7 +107,7 @@ export function WeeklyTaskBoard() {
 
         {/* Expanded Content */}
         {isExpanded && (
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 h-[380px] flex flex-col">
             {/* Time Filter */}
             <div className="flex flex-wrap gap-2">
               {TIME_FILTERS.map((filter) => (
@@ -129,7 +136,7 @@ export function WeeklyTaskBoard() {
             </div>
 
             {/* Task List */}
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            <div className="space-y-2 max-h-[180px] overflow-y-auto">
               {todoTasks.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p className="text-sm">No tasks to do! 🎉</p>
