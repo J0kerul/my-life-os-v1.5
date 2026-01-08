@@ -160,7 +160,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <CheckSquare className="w-4 h-4 text-primary" />
                     <span>Task Manager</span>
                   </button>
-                  <button className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground">
+                  <button
+                    onClick={() => handleNavigation("/schedule")}
+                    className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+                  >
                     <Calendar className="w-4 h-4 text-primary" />
                     <span>Schedule</span>
                   </button>
