@@ -439,38 +439,30 @@ export function RoutineDetailView() {
 
           {/* Skippable */}
           <div className="flex items-center gap-3">
-            {isEditing ? (
-              <input
-                type="checkbox"
-                checked={editIsSkippable}
-                onChange={(e) => setEditIsSkippable(e.target.checked)}
-                className="w-4 h-4 rounded border-border"
-              />
-            ) : (
-              <div
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                  selectedRoutine.isSkippable
-                    ? "bg-primary border-primary"
-                    : "border-muted-foreground"
-                }`}
-              >
-                {selectedRoutine.isSkippable && (
-                  <svg
-                    className="w-3 h-3 text-primary-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </div>
-            )}
+            <div
+              onClick={() => isEditing && setEditIsSkippable(!editIsSkippable)}
+              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                (isEditing ? editIsSkippable : selectedRoutine.isSkippable)
+                  ? "bg-primary border-primary"
+                  : "border-muted-foreground"
+              } ${isEditing ? "cursor-pointer" : ""}`}
+            >
+              {(isEditing ? editIsSkippable : selectedRoutine.isSkippable) && (
+                <svg
+                  className="w-3 h-3 text-primary-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </div>
             <div className="flex items-center gap-2 text-sm">
               <SkipForward className="w-4 h-4 text-muted-foreground" />
               <span>Skippable (streak preserved)</span>
@@ -479,38 +471,30 @@ export function RoutineDetailView() {
 
           {/* Show Streak */}
           <div className="flex items-center gap-3">
-            {isEditing ? (
-              <input
-                type="checkbox"
-                checked={editShowStreak}
-                onChange={(e) => setEditShowStreak(e.target.checked)}
-                className="w-4 h-4 rounded border-border"
-              />
-            ) : (
-              <div
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                  selectedRoutine.showStreak
-                    ? "bg-primary border-primary"
-                    : "border-muted-foreground"
-                }`}
-              >
-                {selectedRoutine.showStreak && (
-                  <svg
-                    className="w-3 h-3 text-primary-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </div>
-            )}
+            <div
+              onClick={() => isEditing && setEditShowStreak(!editShowStreak)}
+              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                (isEditing ? editShowStreak : selectedRoutine.showStreak)
+                  ? "bg-primary border-primary"
+                  : "border-muted-foreground"
+              } ${isEditing ? "cursor-pointer" : ""}`}
+            >
+              {(isEditing ? editShowStreak : selectedRoutine.showStreak) && (
+                <svg
+                  className="w-3 h-3 text-primary-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </div>
             <div className="flex items-center gap-2 text-sm">
               <Flame className="w-4 h-4 text-muted-foreground" />
               <span>Show streak</span>

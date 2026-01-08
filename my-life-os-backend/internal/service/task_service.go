@@ -145,20 +145,30 @@ func (s *taskService) GetUserTasksWithFilters(userID uuid.UUID, domain, status, 
 // matchesTimeFilter checks if task matches time filter
 func (s *taskService) matchesTimeFilter(task *entities.Task, timeFilter string) bool {
 	now := time.Now()
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	switch timeFilter {
 	case "long_term":
 		// Tasks with no deadline
 		return task.Deadline == nil
 
-	case "today":
-		// Tasks due today
+	case "overdue":
+		// Tasks with deadline in the past and not completed
 		if task.Deadline == nil {
 			return false
 		}
-		todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		if task.Status == entities.StatusDone {
+			return false
+		}
+		return task.Deadline.Before(todayStart)
+
+	case "today":
+		// Tasks due today (only those with deadline set to today)
+		if task.Deadline == nil {
+			return false
+		}
 		tomorrowStart := todayStart.Add(24 * time.Hour)
-		return task.Deadline.After(todayStart) && task.Deadline.Before(tomorrowStart)
+		return !task.Deadline.Before(todayStart) && task.Deadline.Before(tomorrowStart)
 
 	case "tomorrow":
 		// Tasks due tomorrow
@@ -168,7 +178,7 @@ func (s *taskService) matchesTimeFilter(task *entities.Task, timeFilter string) 
 		tomorrow := now.AddDate(0, 0, 1)
 		tomorrowStart := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, tomorrow.Location())
 		tomorrowEnd := tomorrowStart.Add(24 * time.Hour)
-		return task.Deadline.After(tomorrowStart) && task.Deadline.Before(tomorrowEnd)
+		return !task.Deadline.Before(tomorrowStart) && task.Deadline.Before(tomorrowEnd)
 
 	case "next_week":
 		// Tasks due in next 7 days (rolling window from today)

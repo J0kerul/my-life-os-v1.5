@@ -58,7 +58,7 @@ export type TaskDomain =
   | "Health";
 
 // Time filters for task filtering
-export type TimeFilter = "long_term" | "today" | "tomorrow" | "next_week" | "next_month";
+export type TimeFilter = "long_term" | "today" | "tomorrow" | "next_week" | "next_month" | "overdue";
 
 export interface Task {
   id: string;

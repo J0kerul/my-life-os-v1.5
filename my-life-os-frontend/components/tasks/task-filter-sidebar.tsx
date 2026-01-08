@@ -7,11 +7,12 @@ import { useState } from "react";
 
 const TIME_FILTERS: { value: TimeFilter | null; label: string }[] = [
   { value: null, label: "All Tasks" },
-  { value: "long_term", label: "Long Term" },
+  { value: "overdue", label: "Overdue" },
   { value: "today", label: "Today" },
   { value: "tomorrow", label: "Tomorrow" },
   { value: "next_week", label: "Next Week" },
   { value: "next_month", label: "Next Month" },
+  { value: "long_term", label: "Long Term" },
 ];
 
 const DOMAINS: TaskDomain[] = [
@@ -26,14 +27,14 @@ const DOMAINS: TaskDomain[] = [
 ];
 
 export function TaskFilterSidebar() {
-  const { 
-    timeFilter, 
-    domainFilter, 
+  const {
+    timeFilter,
+    domainFilter,
     statusFilter,
-    setTimeFilter, 
-    setDomainFilter, 
+    setTimeFilter,
+    setDomainFilter,
     setStatusFilter,
-    clearFilters 
+    clearFilters,
   } = useTaskStore();
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
 
@@ -62,7 +63,8 @@ export function TaskFilterSidebar() {
     }
   };
 
-  const currentTimeLabel = TIME_FILTERS.find((f) => f.value === timeFilter)?.label || "All Tasks";
+  const currentTimeLabel =
+    TIME_FILTERS.find((f) => f.value === timeFilter)?.label || "All Tasks";
 
   return (
     <div className="space-y-6">

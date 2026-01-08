@@ -25,39 +25,25 @@ export function TaskList() {
     );
   }
 
-  // Count completed vs total
-  const completedCount = tasks.filter((t) => t.status === "Done").length;
-  const totalCount = tasks.length;
-
   // If showing all tasks, group by deadline and sort by status within groups
   const showGrouping = timeFilter === null;
-  
-  const sortByStatus = (a: typeof tasks[0], b: typeof tasks[0]) => {
+
+  const sortByStatus = (a: (typeof tasks)[0], b: (typeof tasks)[0]) => {
     // Todo tasks first, Done tasks last
     if (a.status === "Todo" && b.status === "Done") return -1;
     if (a.status === "Done" && b.status === "Todo") return 1;
     return 0;
   };
-  
-  const tasksWithDeadline = showGrouping 
-    ? tasks.filter((t) => t.deadline).sort(sortByStatus) 
+
+  const tasksWithDeadline = showGrouping
+    ? tasks.filter((t) => t.deadline).sort(sortByStatus)
     : [];
-  const tasksLongTerm = showGrouping 
-    ? tasks.filter((t) => !t.deadline).sort(sortByStatus) 
+  const tasksLongTerm = showGrouping
+    ? tasks.filter((t) => !t.deadline).sort(sortByStatus)
     : [];
 
   return (
     <div className="space-y-4">
-      {/* Progress Stats */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground pb-2 border-b border-border">
-        <span>
-          {completedCount} / {totalCount} completed
-        </span>
-        {totalCount > 0 && (
-          <span>{Math.round((completedCount / totalCount) * 100)}%</span>
-        )}
-      </div>
-
       {/* Task Items - Grouped or Flat */}
       {showGrouping ? (
         <>
