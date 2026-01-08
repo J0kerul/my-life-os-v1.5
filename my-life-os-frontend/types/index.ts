@@ -97,3 +97,78 @@ export interface TaskResponse {
   task: Task;
   message?: string;
 }
+
+// ============================================
+// ROUTINE TYPES (Sprint 4)
+// ============================================
+
+export type RoutineFrequency = "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Yearly";
+export type RoutineTimeType = "AM" | "PM" | "AllDay" | "Specific";
+
+export interface YearlyDate {
+  month: number; // 1-12
+  day: number;   // 1-31
+}
+
+export interface Routine {
+  id: string;
+  userId: string;
+  title: string;
+  frequency: RoutineFrequency;
+  weekday?: number;          // 0-6 for Weekly (0=Sunday)
+  dayOfMonth?: number;       // 1-31 for Monthly
+  quarterlyDay?: number;     // 1-31 for Quarterly
+  yearlyDate?: YearlyDate;   // {month, day} for Yearly
+  isSkippable: boolean;
+  showStreak: boolean;
+  timeType: RoutineTimeType;
+  specificTime?: string;     // HH:mm format
+  currentStreak: number;
+  longestStreak: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRoutineRequest {
+  title: string;
+  frequency: RoutineFrequency;
+  weekday?: number;
+  dayOfMonth?: number;
+  quarterlyDay?: number;
+  yearlyDate?: YearlyDate;
+  isSkippable: boolean;
+  showStreak: boolean;
+  timeType: RoutineTimeType;
+  specificTime?: string;
+}
+
+export interface UpdateRoutineRequest {
+  title?: string;
+  frequency?: RoutineFrequency;
+  weekday?: number;
+  dayOfMonth?: number;
+  quarterlyDay?: number;
+  yearlyDate?: YearlyDate;
+  isSkippable?: boolean;
+  showStreak?: boolean;
+  timeType?: RoutineTimeType;
+  specificTime?: string;
+}
+
+export interface RoutinesResponse {
+  routines: Routine[];
+}
+
+export interface RoutineResponse {
+  routine: Routine;
+  message?: string;
+}
+
+export interface RoutineCompletion {
+  id: string;
+  routineId: string;
+  userId: string;
+  completedAt: string;      // Date only (YYYY-MM-DD)
+  status: "completed" | "skipped";
+  createdAt: string;
+}
