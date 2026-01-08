@@ -27,8 +27,8 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations (User + RefreshToken + Task + Routine + RoutineCompletion)
-	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}, &entities.Task{}, &entities.Routine{}, &entities.RoutineCompletion{}); err != nil {
+	// Run migrations (User + RefreshToken + Task + Routine + RoutineCompletion + ScheduleEvent)
+	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}, &entities.Task{}, &entities.Routine{}, &entities.RoutineCompletion{}, &entities.ScheduleEvent{}); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
 
@@ -37,16 +37,20 @@ func main() {
 	tokenRepo := postgres.NewTokenRepository(db)
 	taskRepo := postgres.NewTaskRepository(db)
 	routineRepo := postgres.NewRoutineRepository(db)
+	scheduleRepo := postgres.NewScheduleEventRepository(db)
 
 	// Initialize Services (Business Logic Layer)
 	authService := service.NewAuthService(userRepo, tokenRepo, cfg.JWTSecret)
 	taskService := service.NewTaskService(taskRepo)
 	routineService := service.NewRoutineService(routineRepo)
+	scheduleService := service.NewScheduleEventService(scheduleRepo)
+
 	// Initialize Handlers (HTTP Layer)
 	isDev := cfg.Environment == "development"
 	authHdl := authHandler.NewAuthHandler(authService, isDev)
 	taskHdl := authHandler.NewTaskHandler(taskService)
 	routineHdl := authHandler.NewRoutineHandler(routineService)
+	scheduleHdl := authHandler.NewScheduleEventHandler(scheduleService)
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
@@ -114,6 +118,14 @@ func main() {
 	routines.Patch("/:id/complete", routineHdl.CompleteRoutine) // PATCH /api/routines/:id/complete
 	routines.Patch("/:id/skip", routineHdl.SkipRoutine)         // PATCH /api/routines/:id/skip
 	routines.Delete("/:id", routineHdl.DeleteRoutine)           // DELETE /api/routines/:id
+
+	// Schedule routes (protected - require authentication)
+	schedule := api.Group("/schedule", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	schedule.Get("/", scheduleHdl.GetEvents)         // GET /api/schedule?start=...&end=...
+	schedule.Post("/", scheduleHdl.CreateEvent)      // POST /api/schedule
+	schedule.Get("/:id", scheduleHdl.GetEvent)       // GET /api/schedule/:id
+	schedule.Put("/:id", scheduleHdl.UpdateEvent)    // PUT /api/schedule/:id
+	schedule.Delete("/:id", scheduleHdl.DeleteEvent) // DELETE /api/schedule/:id
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)
