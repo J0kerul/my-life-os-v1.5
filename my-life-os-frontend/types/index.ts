@@ -172,3 +172,81 @@ export interface RoutineCompletion {
   status: "completed" | "skipped";
   createdAt: string;
 }
+
+// ============================================
+// SCHEDULE TYPES (Sprint 4)
+// ============================================
+
+export type ScheduleDomain = 
+  | "Personal"
+  | "Family"
+  | "Working"
+  | "University"
+  | "Health"
+  | "Social"
+  | "Coding"
+  | "Holidays";
+
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "yearly";
+
+export type CalendarView = "month" | "week" | "day" | "agenda";
+
+export type UpdateType = "single" | "future";
+
+export type DeleteType = "single" | "future";
+
+export interface ScheduleEvent {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  domain: ScheduleDomain;
+  startDate: string; // ISO 8601 format
+  endDate: string;   // ISO 8601 format
+  isAllDay: boolean;
+  location: string;
+  linkedTaskId?: string;
+  recurrence: RecurrenceType;
+  recurrenceEndDate?: string; // ISO 8601 format
+  parentEventId?: string;
+  exceptionDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateScheduleEventRequest {
+  title: string;
+  description?: string;
+  domain: ScheduleDomain;
+  startDate: string; // ISO 8601 format
+  endDate: string;   // ISO 8601 format
+  isAllDay?: boolean;
+  location?: string;
+  linkedTaskId?: string;
+  recurrence?: RecurrenceType;
+  recurrenceEndDate?: string; // ISO 8601 format
+}
+
+export interface UpdateScheduleEventRequest {
+  title: string;
+  description?: string;
+  domain: ScheduleDomain;
+  startDate: string; // ISO 8601 format
+  endDate: string;   // ISO 8601 format
+  isAllDay?: boolean;
+  location?: string;
+  linkedTaskId?: string;
+  recurrence?: RecurrenceType;
+  recurrenceEndDate?: string; // ISO 8601 format
+  updateType?: UpdateType; // "single" or "future"
+}
+
+export interface ScheduleEventsResponse {
+  events: ScheduleEvent[];
+}
+
+export interface ScheduleEventResponse {
+  event: ScheduleEvent;
+  message?: string;
+  conflicts?: ScheduleEvent[]; // Returned when creating an event
+}
