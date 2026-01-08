@@ -36,15 +36,17 @@ func main() {
 	userRepo := postgres.NewUserRepository(db)
 	tokenRepo := postgres.NewTokenRepository(db)
 	taskRepo := postgres.NewTaskRepository(db)
+	routineRepo := postgres.NewRoutineRepository(db)
 
 	// Initialize Services (Business Logic Layer)
 	authService := service.NewAuthService(userRepo, tokenRepo, cfg.JWTSecret)
 	taskService := service.NewTaskService(taskRepo)
-
+	routineService := service.NewRoutineService(routineRepo)
 	// Initialize Handlers (HTTP Layer)
 	isDev := cfg.Environment == "development"
 	authHdl := authHandler.NewAuthHandler(authService, isDev)
 	taskHdl := authHandler.NewTaskHandler(taskService)
+	routineHdl := authHandler.NewRoutineHandler(routineService)
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
@@ -101,6 +103,17 @@ func main() {
 	tasks.Put("/:id", taskHdl.UpdateTask)                // PUT /api/tasks/:id
 	tasks.Patch("/:id/status", taskHdl.ToggleTaskStatus) // PATCH /api/tasks/:id/status
 	tasks.Delete("/:id", taskHdl.DeleteTask)             // DELETE /api/tasks/:id
+
+	// Routine routes (protected - require authentication)
+	routines := api.Group("/routines", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	routines.Get("/", routineHdl.GetRoutines)                   // GET /api/routines (with optional ?frequency=Daily)
+	routines.Get("/today", routineHdl.GetTodaysRoutines)        // GET /api/routines/today
+	routines.Post("/", routineHdl.CreateRoutine)                // POST /api/routines
+	routines.Get("/:id", routineHdl.GetRoutine)                 // GET /api/routines/:id
+	routines.Put("/:id", routineHdl.UpdateRoutine)              // PUT /api/routines/:id
+	routines.Patch("/:id/complete", routineHdl.CompleteRoutine) // PATCH /api/routines/:id/complete
+	routines.Patch("/:id/skip", routineHdl.SkipRoutine)         // PATCH /api/routines/:id/skip
+	routines.Delete("/:id", routineHdl.DeleteRoutine)           // DELETE /api/routines/:id
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)
