@@ -19,7 +19,7 @@ const TIME_FILTERS: { value: TimeFilter | null; label: string }[] = [
 
 export function WeeklyTaskBoard() {
   const { tasks, fetchTasksWithFilters, toggleTaskStatus } = useTaskStore();
-  
+
   // Widget state
   const [isExpanded, setIsExpanded] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter | null>(null);
@@ -33,7 +33,7 @@ export function WeeklyTaskBoard() {
   }, [timeFilter, fetchTasksWithFilters]);
 
   // Filter to only show Todo tasks
-  const todoTasks = tasks.filter(task => task.status === "Todo");
+  const todoTasks = tasks.filter((task) => task.status === "Todo");
 
   const handleTaskClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -45,7 +45,7 @@ export function WeeklyTaskBoard() {
     await toggleTaskStatus(taskId);
   };
 
-  const completedCount = tasks.filter(t => t.status === "Done").length;
+  const completedCount = tasks.filter((t) => t.status === "Done").length;
   const totalCount = tasks.length;
 
   return (
@@ -59,10 +59,12 @@ export function WeeklyTaskBoard() {
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <ClipboardCheck className="w-5 h-5 text-blue-500" />
             </div>
-            
+
             {/* Title */}
-            <h2 className="text-lg font-semibold text-gray-200">Task Manager</h2>
-            
+            <h2 className="text-lg font-semibold text-gray-200">
+              Task Manager
+            </h2>
+
             {/* Badge - Task count */}
             {!isExpanded && (
               <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
@@ -120,7 +122,9 @@ export function WeeklyTaskBoard() {
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{todoTasks.length} tasks to do</span>
               {totalCount > 0 && (
-                <span>{completedCount}/{totalCount} completed</span>
+                <span>
+                  {completedCount}/{totalCount} completed
+                </span>
               )}
             </div>
 
@@ -133,8 +137,10 @@ export function WeeklyTaskBoard() {
                 </div>
               ) : (
                 todoTasks.map((task) => {
-                  const deadlineInfo = task.deadline ? formatDeadline(task.deadline) : null;
-                  
+                  const deadlineInfo = task.deadline
+                    ? formatDeadline(task.deadline)
+                    : null;
+
                   return (
                     <div
                       key={task.id}
@@ -154,26 +160,40 @@ export function WeeklyTaskBoard() {
                         <h3 className="font-medium text-sm text-gray-200 group-hover:text-primary transition-colors">
                           {task.title}
                         </h3>
-                        
+
                         {/* Meta info */}
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                           {/* Priority */}
-                          <span className={`${
-                            task.priority === "High" ? "text-red-500" :
-                            task.priority === "Medium" ? "text-yellow-500" :
-                            "text-green-500"
-                          }`}>
-                            {task.priority === "High" ? "↑" : task.priority === "Medium" ? "−" : "↓"}
+                          <span
+                            className={`${
+                              task.priority === "High"
+                                ? "text-red-500"
+                                : task.priority === "Medium"
+                                ? "text-yellow-500"
+                                : "text-green-500"
+                            }`}
+                          >
+                            {task.priority === "High"
+                              ? "↑"
+                              : task.priority === "Medium"
+                              ? "−"
+                              : "↓"}
                           </span>
-                          
+
                           {/* Domain */}
                           <span>{task.domain}</span>
-                          
+
                           {/* Deadline */}
                           {deadlineInfo && (
                             <>
                               <span>•</span>
-                              <span className={deadlineInfo.isRed ? "text-red-500 font-medium" : ""}>
+                              <span
+                                className={
+                                  deadlineInfo.isRed
+                                    ? "text-red-500 font-medium"
+                                    : ""
+                                }
+                              >
                                 {deadlineInfo.text}
                               </span>
                             </>
