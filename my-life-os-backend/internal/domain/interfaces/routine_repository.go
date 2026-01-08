@@ -8,21 +8,21 @@ import (
 
 // RoutineRepository defines the interface for routine data access
 type RoutineRepository interface {
-	// CreateRoutine creates a new routine in the database
+	// Create a new routine
 	CreateRoutine(routine *entities.Routine) error
 
-	// GetRoutineByID retrieves a routine by its ID
+	// Get routine by ID
 	GetRoutineByID(id uuid.UUID) (*entities.Routine, error)
 
-	//GetRoutinesByUserID retrieves all routines for a specific user
-	GetRoutinesByUserID(userID uuid.UUID) ([]*entities.Routine, error)
+	// Get all routines for a user with optional frequency filter
+	GetRoutinesByUserID(userID uuid.UUID, frequency *string) ([]*entities.Routine, error)
 
-	// UpdateRoutine updates an existing routine in the database
+	// Update routine
 	UpdateRoutine(routine *entities.Routine) error
 
-	// DeleteRoutine deletes a routine by its ID
+	// Delete routine
 	DeleteRoutine(id uuid.UUID) error
 
-	// // Update streak counters
+	// Update streak counters
 	UpdateStreak(id uuid.UUID, currentStreak, longestStreak int) error
 }
