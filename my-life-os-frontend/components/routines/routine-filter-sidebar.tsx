@@ -2,8 +2,6 @@
 
 import { useRoutineStore } from "@/lib/store/routine-store";
 import type { RoutineFrequency } from "@/types";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
 
 const FREQUENCY_FILTERS: { value: RoutineFrequency | null; label: string }[] = [
   { value: null, label: "All Routines" },
@@ -17,16 +15,16 @@ const FREQUENCY_FILTERS: { value: RoutineFrequency | null; label: string }[] = [
 export function RoutineFilterSidebar() {
   const { frequencyFilter, setFrequencyFilter, clearFilters } =
     useRoutineStore();
-  const [isFrequencyDropdownOpen, setIsFrequencyDropdownOpen] = useState(false);
 
-  const handleFrequencyFilterChange = (filter: RoutineFrequency | null) => {
-    setFrequencyFilter(filter);
-    setIsFrequencyDropdownOpen(false);
+  const handleFrequencyFilterToggle = (frequency: RoutineFrequency | null) => {
+    if (frequencyFilter === frequency) {
+      // Deselect - clear filter
+      setFrequencyFilter(null);
+    } else {
+      // Select new frequency
+      setFrequencyFilter(frequency);
+    }
   };
-
-  const currentFrequencyLabel =
-    FREQUENCY_FILTERS.find((f) => f.value === frequencyFilter)?.label ||
-    "All Routines";
 
   return (
     <div className="space-y-6">
@@ -43,49 +41,36 @@ export function RoutineFilterSidebar() {
         )}
       </div>
 
-      {/* Frequency Filter Dropdown */}
+      {/* Frequency Filter Buttons */}
       <div>
         <label className="text-sm font-medium mb-2 block">Frequency</label>
-        <div className="relative">
+        <div className="space-y-1">
           <button
-            onClick={() => setIsFrequencyDropdownOpen(!isFrequencyDropdownOpen)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-left flex items-center justify-between hover:bg-accent transition-colors"
+            onClick={() => handleFrequencyFilterToggle(null)}
+            className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors ${
+              frequencyFilter === null
+                ? "bg-primary text-primary-foreground font-medium"
+                : "bg-background border border-border hover:bg-accent"
+            }`}
           >
-            <span>{currentFrequencyLabel}</span>
-            <ChevronDown
-              className={`w-4 h-4 text-muted-foreground transition-transform ${
-                isFrequencyDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
+            All Routines
           </button>
-
-          {/* Dropdown Menu */}
-          {isFrequencyDropdownOpen && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setIsFrequencyDropdownOpen(false)}
-              />
-
-              {/* Menu */}
-              <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-20 overflow-hidden">
-                {FREQUENCY_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => handleFrequencyFilterChange(filter.value)}
-                    className={`w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors ${
-                      frequencyFilter === filter.value
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+          {FREQUENCY_FILTERS.filter((f) => f.value !== null).map((filter) => {
+            const isActive = frequencyFilter === filter.value;
+            return (
+              <button
+                key={filter.value}
+                onClick={() => handleFrequencyFilterToggle(filter.value)}
+                className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "bg-background border border-border hover:bg-accent"
+                }`}
+              >
+                {filter.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -95,7 +80,13 @@ export function RoutineFilterSidebar() {
           <p className="text-xs text-muted-foreground mb-2">Active Filter:</p>
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-              <span>Frequency: {currentFrequencyLabel}</span>
+              <span>
+                Frequency:{" "}
+                {
+                  FREQUENCY_FILTERS.find((f) => f.value === frequencyFilter)
+                    ?.label
+                }
+              </span>
               <button
                 onClick={() => setFrequencyFilter(null)}
                 className="hover:text-primary-foreground transition-colors"

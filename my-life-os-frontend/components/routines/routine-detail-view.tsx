@@ -25,27 +25,27 @@ const FREQUENCIES: RoutineFrequency[] = [
 ];
 const TIME_TYPES: RoutineTimeType[] = ["AM", "PM", "AllDay", "Specific"];
 const WEEKDAYS = [
-  { value: 0, label: "Sonntag" },
-  { value: 1, label: "Montag" },
-  { value: 2, label: "Dienstag" },
-  { value: 3, label: "Mittwoch" },
-  { value: 4, label: "Donnerstag" },
-  { value: 5, label: "Freitag" },
-  { value: 6, label: "Samstag" },
+  { value: 0, label: "Sunday" },
+  { value: 1, label: "Monday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
+  { value: 6, label: "Saturday" },
 ];
 const MONTHS = [
-  { value: 1, label: "Januar" },
-  { value: 2, label: "Februar" },
-  { value: 3, label: "März" },
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
   { value: 4, label: "April" },
-  { value: 5, label: "Mai" },
-  { value: 6, label: "Juni" },
-  { value: 7, label: "Juli" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
   { value: 8, label: "August" },
   { value: 9, label: "September" },
-  { value: 10, label: "Oktober" },
+  { value: 10, label: "October" },
   { value: 11, label: "November" },
-  { value: 12, label: "Dezember" },
+  { value: 12, label: "December" },
 ];
 
 const FREQUENCY_COLORS = {
@@ -57,10 +57,10 @@ const FREQUENCY_COLORS = {
 };
 
 const TIME_TYPE_LABELS = {
-  AM: "Morgens",
-  PM: "Abends",
-  AllDay: "Ganztags",
-  Specific: "Bestimmte Zeit",
+  AM: "Morning",
+  PM: "Evening",
+  AllDay: "All Day",
+  Specific: "Specific Time",
 };
 
 export function RoutineDetailView() {
@@ -246,7 +246,7 @@ export function RoutineDetailView() {
         {isEditing && editFrequency === "Weekly" && (
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
-              Wochentag
+              Weekday
             </label>
             <select
               value={editWeekday}
@@ -267,7 +267,7 @@ export function RoutineDetailView() {
           selectedRoutine.weekday !== undefined && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Wochentag
+                Weekday
               </label>
               <div className="text-sm">
                 {getWeekdayName(selectedRoutine.weekday)}
@@ -278,7 +278,7 @@ export function RoutineDetailView() {
         {isEditing && editFrequency === "Monthly" && (
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
-              Tag im Monat
+              Day of Month
             </label>
             <input
               type="number"
@@ -296,16 +296,16 @@ export function RoutineDetailView() {
           selectedRoutine.dayOfMonth !== undefined && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Tag im Monat
+                Day of Month
               </label>
-              <div className="text-sm">{selectedRoutine.dayOfMonth}.</div>
+              <div className="text-sm">{selectedRoutine.dayOfMonth}</div>
             </div>
           )}
 
         {isEditing && editFrequency === "Quarterly" && (
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
-              Tag im Quartal
+              Day of Quarter
             </label>
             <input
               type="number"
@@ -316,7 +316,7 @@ export function RoutineDetailView() {
               className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Tag im Startmonat jedes Quartals (Jan, Apr, Jul, Okt)
+              Day in the starting month of each quarter (Jan, Apr, Jul, Oct)
             </p>
           </div>
         )}
@@ -326,10 +326,10 @@ export function RoutineDetailView() {
           selectedRoutine.quarterlyDay !== undefined && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Tag im Quartal
+                Day of Quarter
               </label>
               <div className="text-sm">
-                {selectedRoutine.quarterlyDay}. (Jan, Apr, Jul, Okt)
+                {selectedRoutine.quarterlyDay} (Jan, Apr, Jul, Oct)
               </div>
             </div>
           )}
@@ -337,7 +337,7 @@ export function RoutineDetailView() {
         {isEditing && editFrequency === "Yearly" && (
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
-              Jährliches Datum
+              Yearly Date
             </label>
             <div className="grid grid-cols-2 gap-2">
               <select
@@ -358,7 +358,7 @@ export function RoutineDetailView() {
                 value={editYearlyDay}
                 onChange={(e) => setEditYearlyDay(parseInt(e.target.value))}
                 className="px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Tag"
+                placeholder="Day"
               />
             </div>
           </div>
@@ -369,11 +369,11 @@ export function RoutineDetailView() {
           selectedRoutine.yearlyDate && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Jährliches Datum
+                Yearly Date
               </label>
               <div className="text-sm">
-                {selectedRoutine.yearlyDate.day}.{" "}
-                {getMonthName(selectedRoutine.yearlyDate.month)}
+                {getMonthName(selectedRoutine.yearlyDate.month)}{" "}
+                {selectedRoutine.yearlyDate.day}
               </div>
             </div>
           )}
@@ -382,7 +382,7 @@ export function RoutineDetailView() {
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
             <Clock className="w-3 h-3" />
-            Zeit
+            Time
           </label>
           {isEditing ? (
             <select
@@ -409,7 +409,7 @@ export function RoutineDetailView() {
         {isEditing && editTimeType === "Specific" && (
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
-              Uhrzeit
+              Time
             </label>
             <input
               type="time"
@@ -425,16 +425,16 @@ export function RoutineDetailView() {
           selectedRoutine.specificTime && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Uhrzeit
+                Time
               </label>
-              <div className="text-sm">{selectedRoutine.specificTime} Uhr</div>
+              <div className="text-sm">{selectedRoutine.specificTime}</div>
             </div>
           )}
 
         {/* Options */}
         <div className="space-y-3">
           <label className="text-xs font-medium text-muted-foreground block">
-            Optionen
+            Options
           </label>
 
           {/* Skippable */}
@@ -473,7 +473,7 @@ export function RoutineDetailView() {
             )}
             <div className="flex items-center gap-2 text-sm">
               <SkipForward className="w-4 h-4 text-muted-foreground" />
-              <span>Skippable (Streak bleibt erhalten)</span>
+              <span>Skippable (streak preserved)</span>
             </div>
           </div>
 
@@ -513,7 +513,7 @@ export function RoutineDetailView() {
             )}
             <div className="flex items-center gap-2 text-sm">
               <Flame className="w-4 h-4 text-muted-foreground" />
-              <span>Streak anzeigen</span>
+              <span>Show streak</span>
             </div>
           </div>
         </div>

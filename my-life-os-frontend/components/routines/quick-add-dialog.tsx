@@ -20,35 +20,35 @@ const FREQUENCIES: RoutineFrequency[] = [
 const TIME_TYPES: RoutineTimeType[] = ["AM", "PM", "AllDay", "Specific"];
 
 const TIME_TYPE_LABELS = {
-  AM: "Morgens",
-  PM: "Abends",
-  AllDay: "Ganztags",
-  Specific: "Bestimmte Zeit",
+  AM: "Morning",
+  PM: "Evening",
+  AllDay: "All Day",
+  Specific: "Specific Time",
 };
 
 const WEEKDAYS = [
-  { value: 0, label: "Sonntag" },
-  { value: 1, label: "Montag" },
-  { value: 2, label: "Dienstag" },
-  { value: 3, label: "Mittwoch" },
-  { value: 4, label: "Donnerstag" },
-  { value: 5, label: "Freitag" },
-  { value: 6, label: "Samstag" },
+  { value: 0, label: "Sunday" },
+  { value: 1, label: "Monday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
+  { value: 6, label: "Saturday" },
 ];
 
 const MONTHS = [
-  { value: 1, label: "Januar" },
-  { value: 2, label: "Februar" },
-  { value: 3, label: "März" },
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
   { value: 4, label: "April" },
-  { value: 5, label: "Mai" },
-  { value: 6, label: "Juni" },
-  { value: 7, label: "Juli" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
   { value: 8, label: "August" },
   { value: 9, label: "September" },
-  { value: 10, label: "Oktober" },
+  { value: 10, label: "October" },
   { value: 11, label: "November" },
-  { value: 12, label: "Dezember" },
+  { value: 12, label: "December" },
 ];
 
 export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
@@ -76,7 +76,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
     }
 
     if (timeType === "Specific" && !specificTime) {
-      setError("Specific time is required when time type is 'Bestimmte Zeit'");
+      setError("Specific time is required when time type is 'Specific Time'");
       return;
     }
 
@@ -227,7 +227,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 htmlFor="weekday"
                 className="block text-sm font-medium mb-2"
               >
-                Wochentag *
+                Weekday *
               </label>
               <div className="relative">
                 <select
@@ -272,7 +272,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 htmlFor="dayOfMonth"
                 className="block text-sm font-medium mb-2"
               >
-                Tag im Monat *
+                Day of Month *
               </label>
               <input
                 id="dayOfMonth"
@@ -293,7 +293,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 htmlFor="quarterlyDay"
                 className="block text-sm font-medium mb-2"
               >
-                Tag im Quartal *
+                Day of Quarter *
               </label>
               <input
                 id="quarterlyDay"
@@ -305,7 +305,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Tag im Startmonat jedes Quartals (Jan, Apr, Jul, Okt)
+                Day in the starting month of each quarter (Jan, Apr, Jul, Oct)
               </p>
             </div>
           )}
@@ -314,7 +314,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
           {frequency === "Yearly" && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Jährliches Datum *
+                Yearly Date *
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
@@ -356,7 +356,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                   value={yearlyDay}
                   onChange={(e) => setYearlyDay(parseInt(e.target.value))}
                   className="px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Tag"
+                  placeholder="Day"
                 />
               </div>
             </div>
@@ -368,7 +368,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
               htmlFor="timeType"
               className="block text-sm font-medium mb-2"
             >
-              Zeit *
+              Time *
             </label>
             <div className="relative">
               <select
@@ -412,7 +412,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 htmlFor="specificTime"
                 className="block text-sm font-medium mb-2"
               >
-                Uhrzeit *
+                Time *
               </label>
               <input
                 id="specificTime"
@@ -426,7 +426,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
 
           {/* Options */}
           <div className="space-y-3 pt-2">
-            <label className="block text-sm font-medium">Optionen</label>
+            <label className="block text-sm font-medium">Options</label>
 
             <div className="flex items-center gap-3">
               <input
@@ -437,7 +437,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 className="w-4 h-4 rounded border-border"
               />
               <label htmlFor="isSkippable" className="text-sm cursor-pointer">
-                Skippable (Streak bleibt erhalten)
+                Skippable (streak preserved)
               </label>
             </div>
 
@@ -450,7 +450,7 @@ export function QuickAddDialog({ isOpen, onClose }: QuickAddDialogProps) {
                 className="w-4 h-4 rounded border-border"
               />
               <label htmlFor="showStreak" className="text-sm cursor-pointer">
-                Streak anzeigen
+                Show streak
               </label>
             </div>
           </div>

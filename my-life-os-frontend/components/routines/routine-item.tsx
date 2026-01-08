@@ -50,13 +50,13 @@ export function RoutineItem({ routine }: RoutineItemProps) {
   const getTimeDisplay = () => {
     switch (routine.timeType) {
       case "AM":
-        return "Morgens";
+        return "Morning";
       case "PM":
-        return "Abends";
+        return "Evening";
       case "AllDay":
-        return "Ganztags";
+        return "All Day";
       case "Specific":
-        return routine.specificTime || "Bestimmte Zeit";
+        return routine.specificTime || "Specific Time";
     }
   };
 
