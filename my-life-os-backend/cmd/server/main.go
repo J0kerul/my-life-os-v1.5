@@ -27,8 +27,8 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations (User + RefreshToken + Task)
-	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}, &entities.Task{}); err != nil {
+	// Run migrations (User + RefreshToken + Task + Routine)
+	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}, &entities.Task{}, &entities.Routine{}); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
 
