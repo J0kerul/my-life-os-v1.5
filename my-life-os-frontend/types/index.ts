@@ -193,7 +193,7 @@ export type CalendarView = "month" | "week" | "day" | "agenda";
 
 export type UpdateType = "single" | "future";
 
-export type DeleteType = "single" | "future";
+export type DeleteType = "single" | "future" | "all";
 
 export interface ScheduleEvent {
   id: string;

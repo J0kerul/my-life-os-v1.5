@@ -12,6 +12,7 @@ import {
   isSameDay,
   isToday,
   parseISO,
+  startOfDay,
 } from "date-fns";
 
 interface MonthCalendarProps {
@@ -56,13 +57,17 @@ export function MonthCalendar({
   const getEventsForDay = (day: Date) => {
     return filteredEvents.filter((event) => {
       const eventStart = parseISO(event.startDate);
-      const eventEnd = parseISO(event.endDate);
+      const checkDay = startOfDay(day);
 
-      // Check if event occurs on this day
-      return (
-        isSameDay(eventStart, day) ||
-        (day >= eventStart && day <= eventEnd && event.isAllDay)
-      );
+      // For all-day events, compare date strings to avoid timezone issues
+      if (event.isAllDay) {
+        const eventDateStr = event.startDate.split("T")[0]; // "2026-01-08"
+        const checkDateStr = format(day, "yyyy-MM-dd");
+        return eventDateStr === checkDateStr;
+      }
+
+      // For timed events, use normal date comparison
+      return isSameDay(eventStart, checkDay);
     });
   };
 
@@ -121,7 +126,7 @@ export function MonthCalendar({
               <div className="space-y-1">
                 {dayEvents.slice(0, 3).map((event) => (
                   <div
-                    key={event.id}
+                    key={`${event.id}-${event.startDate}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onEventClick(event);

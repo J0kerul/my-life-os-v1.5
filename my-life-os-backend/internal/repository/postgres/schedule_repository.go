@@ -46,12 +46,14 @@ func (r *scheduleEventRepository) FindEventsByUserID(userID uuid.UUID) ([]*entit
 }
 
 // FindEventsByDateRange retrieves events within a specific date range for a user
+// Only returns non-recurring events (recurring events are handled separately and expanded)
 func (r *scheduleEventRepository) FindEventsByDateRange(userID uuid.UUID, startDate, endDate time.Time) ([]*entities.ScheduleEvent, error) {
 	var events []*entities.ScheduleEvent
 	err := r.db.Where("user_id = ?", userID).
 		Where("(start_date BETWEEN ? AND ?) OR (end_date BETWEEN ? AND ?) OR (start_date <= ? AND end_date >= ?)",
 			startDate, endDate, startDate, endDate, startDate, endDate).
 		Where("parent_event_id IS NULL").
+		Where("recurrence = ?", entities.RecurrenceNone). // Only non-recurring events
 		Order("start_date ASC").
 		Find(&events).Error
 	if err != nil {

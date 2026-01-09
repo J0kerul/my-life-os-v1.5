@@ -252,9 +252,12 @@ func (s *scheduleEventService) DeleteEvent(id uuid.UUID, deleteType string) erro
 		now := time.Now()
 		event.RecurrenceEndDate = &now
 		return s.scheduleRepo.UpdateEvent(event)
+	} else if deleteType == "all" {
+		// Delete the entire recurring event
+		return s.scheduleRepo.DeleteEvent(id)
 	}
 
-	return errors.New("invalid delete type, must be 'single' or 'future'")
+	return errors.New("invalid delete type, must be 'single', 'future', or 'all'")
 }
 
 // CheckConflicts checks for time conflicts with other events

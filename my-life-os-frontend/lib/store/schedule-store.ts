@@ -131,10 +131,18 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
   },
 
   // Delete event
-  deleteEvent: async (eventId, deleteType = "single") => {
+  deleteEvent: async (eventId, deleteType) => {
     set({ isLoading: true, error: null });
     try {
-      await apiDeleteEvent(eventId, deleteType);
+      // If no deleteType specified, auto-detect: use "all" for recurring events
+      let finalDeleteType = deleteType;
+      if (!finalDeleteType) {
+        const { events } = get();
+        const event = events.find(e => e.id === eventId);
+        finalDeleteType = (event && event.recurrence !== "none") ? "all" : "single";
+      }
+      
+      await apiDeleteEvent(eventId, finalDeleteType);
       
       // Refetch events to get correct state after deletion
       const { rangeStart, rangeEnd } = get();
