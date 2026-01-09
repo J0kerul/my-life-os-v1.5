@@ -217,9 +217,12 @@ func (s *scheduleEventService) UpdateEvent(event *entities.ScheduleEvent, update
 	} else if updateType == "future" {
 		// Update the base recurring event
 		return s.scheduleRepo.UpdateEvent(event)
+	} else if updateType == "all" {
+		// Update the entire series
+		return s.scheduleRepo.UpdateEvent(event)
 	}
 
-	return errors.New("invalid update type, must be 'single' or 'future'")
+	return errors.New("invalid update type, must be 'single', 'future', or 'all'")
 }
 
 // DeleteEvent removes a schedule event

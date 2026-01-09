@@ -126,12 +126,14 @@ export async function createEvent(
 // Update event
 export async function updateEvent(
   eventId: string,
-  eventData: UpdateScheduleEventRequest
+  eventData: UpdateScheduleEventRequest,
+  updateType?: DeleteType
 ): Promise<ScheduleEvent> {
   // Holidays domain is always all-day
   const finalEventData = {
     ...eventData,
     isAllDay: eventData.domain === "Holidays" ? true : eventData.isAllDay,
+    updateType: updateType || "single", // Add updateType to request
   };
 
   const response = await fetchWithAuth(`${API_BASE}/schedule/${eventId}`, {

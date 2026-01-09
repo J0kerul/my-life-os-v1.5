@@ -36,7 +36,7 @@ interface ScheduleState {
   fetchEvents: (startDate: string, endDate: string) => Promise<void>;
   selectEvent: (event: ScheduleEvent | null) => void;
   createEvent: (eventData: CreateScheduleEventRequest) => Promise<ScheduleEvent>;
-  updateEvent: (eventId: string, eventData: UpdateScheduleEventRequest) => Promise<ScheduleEvent>;
+  updateEvent: (eventId: string, eventData: UpdateScheduleEventRequest, updateType?: DeleteType) => Promise<ScheduleEvent>;
   deleteEvent: (eventId: string, deleteType?: DeleteType) => Promise<void>;
 
   // View & Filter Actions
@@ -104,10 +104,10 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
   },
 
   // Update event
-  updateEvent: async (eventId, eventData) => {
+  updateEvent: async (eventId, eventData, updateType) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedEvent = await apiUpdateEvent(eventId, eventData);
+      const updatedEvent = await apiUpdateEvent(eventId, eventData, updateType);
       
       // If updateType is "single", the backend creates an exception
       // We need to refetch to get the correct expanded events

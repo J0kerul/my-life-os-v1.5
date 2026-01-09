@@ -7,6 +7,7 @@ import {
   RecurrenceType,
   CreateScheduleEventRequest,
   UpdateScheduleEventRequest,
+  DeleteType,
 } from "@/types";
 import { format, parseISO } from "date-fns";
 import {
@@ -19,6 +20,7 @@ import {
   AlertCircle,
   Trash2,
 } from "lucide-react";
+import RecurringActionDialog from "./recurring-action-dialog";
 
 interface EventDetailCardProps {
   event: ScheduleEvent | null;
@@ -27,9 +29,10 @@ interface EventDetailCardProps {
   onCreate: (event: CreateScheduleEventRequest) => Promise<void>;
   onUpdate: (
     eventId: string,
-    event: UpdateScheduleEventRequest
+    event: UpdateScheduleEventRequest,
+    deleteType?: DeleteType
   ) => Promise<void>;
-  onDelete: (eventId: string) => Promise<void>;
+  onDelete: (eventId: string, deleteType?: DeleteType) => Promise<void>;
   conflicts?: ScheduleEvent[];
 }
 
@@ -75,6 +78,12 @@ export function EventDetailCard({
   const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRecurringDialog, setShowRecurringDialog] = useState(false);
+  const [recurringActionType, setRecurringActionType] = useState<
+    "edit" | "delete"
+  >("edit");
+  const [pendingEventData, setPendingEventData] =
+    useState<UpdateScheduleEventRequest | null>(null);
 
   // Initialize form when event or selectedDate changes
   useEffect(() => {
@@ -130,28 +139,35 @@ export function EventDetailCard({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const eventData = {
+      title,
+      domain,
+      startDate: isAllDay
+        ? `${startDate}T00:00:00Z`
+        : `${startDate}T${startTime}:00Z`,
+      endDate: isAllDay ? `${endDate}T23:59:59Z` : `${endDate}T${endTime}:00Z`,
+      isAllDay,
+      location: location || undefined,
+      description: description || undefined,
+      recurrence: recurrenceType,
+      recurrenceEndDate:
+        recurrenceType !== "none" && recurrenceEndDate
+          ? `${recurrenceEndDate}T23:59:59Z`
+          : undefined,
+    };
+
+    // If editing a recurring event, show dialog
+    if (event && event.recurrence !== "none") {
+      setPendingEventData(eventData);
+      setRecurringActionType("edit");
+      setShowRecurringDialog(true);
+      return;
+    }
+
+    // Otherwise save directly
     setIsLoading(true);
-
     try {
-      const eventData = {
-        title,
-        domain,
-        startDate: isAllDay
-          ? `${startDate}T00:00:00Z`
-          : `${startDate}T${startTime}:00Z`,
-        endDate: isAllDay
-          ? `${endDate}T23:59:59Z`
-          : `${endDate}T${endTime}:00Z`,
-        isAllDay,
-        location: location || undefined,
-        description: description || undefined,
-        recurrence: recurrenceType,
-        recurrenceEndDate:
-          recurrenceType !== "none" && recurrenceEndDate
-            ? `${recurrenceEndDate}T23:59:59Z`
-            : undefined,
-      };
-
       if (event) {
         await onUpdate(event.id, eventData);
       } else {
@@ -167,12 +183,27 @@ export function EventDetailCard({
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    if (!event) return;
+
+    // If recurring event, show dialog
+    if (event.recurrence !== "none") {
+      setRecurringActionType("delete");
+      setShowRecurringDialog(true);
+      setShowDeleteConfirm(false);
+      return;
+    }
+
+    // Otherwise show normal confirmation
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDelete = async (deleteType?: DeleteType) => {
     if (!event) return;
 
     setIsLoading(true);
     try {
-      await onDelete(event.id);
+      await onDelete(event.id, deleteType);
       resetForm();
       onClose();
       setShowDeleteConfirm(false);
@@ -180,6 +211,26 @@ export function EventDetailCard({
       console.error("Failed to delete event:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRecurringAction = async (option: "single" | "future" | "all") => {
+    setShowRecurringDialog(false);
+    setIsLoading(true);
+
+    try {
+      if (recurringActionType === "edit" && pendingEventData && event) {
+        await onUpdate(event.id, pendingEventData, option);
+        resetForm();
+        onClose();
+      } else if (recurringActionType === "delete" && event) {
+        await handleDelete(option);
+      }
+    } catch (error) {
+      console.error(`Failed to ${recurringActionType} event:`, error);
+    } finally {
+      setIsLoading(false);
+      setPendingEventData(null);
     }
   };
 
@@ -430,7 +481,7 @@ export function EventDetailCard({
                 {!showDeleteConfirm ? (
                   <button
                     type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
+                    onClick={handleDeleteClick}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-background border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10 transition-colors disabled:opacity-50"
                   >
@@ -445,7 +496,7 @@ export function EventDetailCard({
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={handleDelete}
+                        onClick={() => handleDelete()}
                         disabled={isLoading}
                         className="flex-1 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm disabled:opacity-50"
                       >
@@ -467,6 +518,17 @@ export function EventDetailCard({
           </div>
         </form>
       )}
+
+      {/* Recurring Action Dialog */}
+      <RecurringActionDialog
+        isOpen={showRecurringDialog}
+        onClose={() => {
+          setShowRecurringDialog(false);
+          setPendingEventData(null);
+        }}
+        onSelectOption={handleRecurringAction}
+        actionType={recurringActionType}
+      />
     </aside>
   );
 }
