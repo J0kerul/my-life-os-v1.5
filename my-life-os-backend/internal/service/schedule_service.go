@@ -226,7 +226,7 @@ func (s *scheduleEventService) UpdateEvent(event *entities.ScheduleEvent, update
 }
 
 // DeleteEvent removes a schedule event
-func (s *scheduleEventService) DeleteEvent(id uuid.UUID, deleteType string) error {
+func (s *scheduleEventService) DeleteEvent(id uuid.UUID, deleteType string, instanceDate *time.Time) error {
 	event, err := s.scheduleRepo.FindEventByID(id)
 	if err != nil {
 		return err
@@ -243,20 +243,32 @@ func (s *scheduleEventService) DeleteEvent(id uuid.UUID, deleteType string) erro
 	// Handle recurring event deletion
 	if deleteType == "single" {
 		// Create a deletion exception (marker without data)
+		if instanceDate == nil {
+			return errors.New("instance date required for single deletion")
+		}
 		exception := entities.ScheduleEvent{
 			UserID:        event.UserID,
 			ParentEventID: &event.ID,
-			ExceptionDate: &event.StartDate,
+			ExceptionDate: instanceDate,
 			// No title or other data = deletion marker
 		}
 		return s.scheduleRepo.CreateEvent(&exception)
 	} else if deleteType == "future" {
-		// Set recurrence end date to now
-		now := time.Now()
-		event.RecurrenceEndDate = &now
+		// Set recurrence end date to one day before the instance date
+		if instanceDate == nil {
+			return errors.New("instance date required for future deletion")
+		}
+		// Subtract one day from the instance date
+		endDate := instanceDate.AddDate(0, 0, -1)
+		event.RecurrenceEndDate = &endDate
 		return s.scheduleRepo.UpdateEvent(event)
 	} else if deleteType == "all" {
-		// Delete the entire recurring event
+		// Delete the entire recurring event AND all its exceptions
+		// First, delete all exceptions (child events with this parent_event_id)
+		if err := s.scheduleRepo.DeleteExceptionsByParentID(id); err != nil {
+			return err
+		}
+		// Then delete the parent event
 		return s.scheduleRepo.DeleteEvent(id)
 	}
 

@@ -32,4 +32,7 @@ type ScheduleEventRepository interface {
 
 	// FindExceptions retrieves all exceptions for a recurring event
 	FindExceptions(parentEventID uuid.UUID) ([]*entities.ScheduleEvent, error)
+
+	// DeleteExceptionsByParentID deletes all exception events for a parent event
+	DeleteExceptionsByParentID(parentEventID uuid.UUID) error
 }

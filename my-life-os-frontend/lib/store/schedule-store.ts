@@ -37,7 +37,7 @@ interface ScheduleState {
   selectEvent: (event: ScheduleEvent | null) => void;
   createEvent: (eventData: CreateScheduleEventRequest) => Promise<ScheduleEvent>;
   updateEvent: (eventId: string, eventData: UpdateScheduleEventRequest, updateType?: DeleteType) => Promise<ScheduleEvent>;
-  deleteEvent: (eventId: string, deleteType?: DeleteType) => Promise<void>;
+  deleteEvent: (eventId: string, deleteType?: DeleteType, instanceDate?: string) => Promise<void>;
 
   // View & Filter Actions
   setCurrentView: (view: CalendarView) => void;
@@ -131,7 +131,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
   },
 
   // Delete event
-  deleteEvent: async (eventId, deleteType) => {
+  deleteEvent: async (eventId, deleteType, instanceDate) => {
     set({ isLoading: true, error: null });
     try {
       // If no deleteType specified, auto-detect: use "all" for recurring events
@@ -142,7 +142,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
         finalDeleteType = (event && event.recurrence !== "none") ? "all" : "single";
       }
       
-      await apiDeleteEvent(eventId, finalDeleteType);
+      await apiDeleteEvent(eventId, finalDeleteType, instanceDate);
       
       // Refetch events to get correct state after deletion
       const { rangeStart, rangeEnd } = get();

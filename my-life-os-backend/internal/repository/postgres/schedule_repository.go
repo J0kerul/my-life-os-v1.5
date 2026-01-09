@@ -97,3 +97,8 @@ func (r *scheduleEventRepository) FindExceptions(parentEventID uuid.UUID) ([]*en
 	}
 	return events, nil
 }
+
+// DeleteExceptionsByParentID deletes all exception events for a parent event
+func (r *scheduleEventRepository) DeleteExceptionsByParentID(parentEventID uuid.UUID) error {
+	return r.db.Where("parent_event_id = ?", parentEventID).Delete(&entities.ScheduleEvent{}).Error
+}

@@ -174,8 +174,8 @@ export default function SchedulePage() {
                 const end = endOfMonth(currentDate);
                 await fetchEvents(start.toISOString(), end.toISOString());
               }}
-              onDelete={async (eventId, deleteType) => {
-                await deleteEvent(eventId, deleteType);
+              onDelete={async (eventId, deleteType, instanceDate) => {
+                await deleteEvent(eventId, deleteType, instanceDate);
                 setSelectedEvent(null);
                 setShowEventDetail(false);
                 // Store handles refetching after delete

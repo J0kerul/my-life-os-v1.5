@@ -32,7 +32,11 @@ interface EventDetailCardProps {
     event: UpdateScheduleEventRequest,
     deleteType?: DeleteType
   ) => Promise<void>;
-  onDelete: (eventId: string, deleteType?: DeleteType) => Promise<void>;
+  onDelete: (
+    eventId: string,
+    deleteType?: DeleteType,
+    instanceDate?: string
+  ) => Promise<void>;
   conflicts?: ScheduleEvent[];
 }
 
@@ -203,7 +207,12 @@ export function EventDetailCard({
 
     setIsLoading(true);
     try {
-      await onDelete(event.id, deleteType);
+      // Pass the event's startDate as instanceDate for "single" and "future" deletes
+      const instanceDate =
+        deleteType === "single" || deleteType === "future"
+          ? event.startDate
+          : undefined;
+      await onDelete(event.id, deleteType, instanceDate);
       resetForm();
       onClose();
       setShowDeleteConfirm(false);

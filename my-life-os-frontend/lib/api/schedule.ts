@@ -156,14 +156,15 @@ export async function updateEvent(
 // Delete event
 export async function deleteEvent(
   eventId: string,
-  deleteType: DeleteType = "single"
+  deleteType: DeleteType = "single",
+  instanceDate?: string // ISO 8601 format - the date of the clicked instance
 ): Promise<void> {
   const response = await fetchWithAuth(`${API_BASE}/schedule/${eventId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ deleteType }),
+    body: JSON.stringify({ deleteType, instanceDate }),
   });
 
   if (!response.ok) {

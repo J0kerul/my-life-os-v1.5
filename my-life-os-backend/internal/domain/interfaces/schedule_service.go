@@ -23,8 +23,9 @@ type ScheduleEventService interface {
 	UpdateEvent(event *entities.ScheduleEvent, updateType string) error
 
 	// DeleteEvent removes a schedule event
-	// deleteType: "single" (only this occurrence) or "future" (this and all future occurrences)
-	DeleteEvent(eventID uuid.UUID, deleteType string) error
+	// deleteType: "single" (only this occurrence), "future" (this and all future occurrences), or "all" (entire series)
+	// instanceDate: the date of the specific instance being deleted (required for "single" and "future")
+	DeleteEvent(eventID uuid.UUID, deleteType string, instanceDate *time.Time) error
 
 	// CheckConflicts checks for time conflicts with other events (excludes Holidays domain)
 	CheckConflicts(event *entities.ScheduleEvent) ([]*entities.ScheduleEvent, error)

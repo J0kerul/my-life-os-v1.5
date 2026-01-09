@@ -52,7 +52,8 @@ type UpdateEventRequest struct {
 
 // DeleteEventRequest represents the request body for deleting a schedule event
 type DeleteEventRequest struct {
-	DeleteType string `json:"deleteType"` // "single" or "future"
+	DeleteType   string  `json:"deleteType"`   // "single", "future", or "all"
+	InstanceDate *string `json:"instanceDate"` // ISO 8601 format - the date of the clicked instance (for "single" and "future")
 }
 
 // CreateEvent handles POST /api/schedule
@@ -383,7 +384,19 @@ func (h *ScheduleEventHandler) DeleteEvent(c *fiber.Ctx) error {
 		deleteType = "single"
 	}
 
-	if err := h.scheduleService.DeleteEvent(eventID, deleteType); err != nil {
+	// Parse instance date if provided
+	var instanceDate *time.Time
+	if req.InstanceDate != nil && *req.InstanceDate != "" {
+		parsedDate, err := time.Parse(time.RFC3339, *req.InstanceDate)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid instance date format",
+			})
+		}
+		instanceDate = &parsedDate
+	}
+
+	if err := h.scheduleService.DeleteEvent(eventID, deleteType, instanceDate); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
