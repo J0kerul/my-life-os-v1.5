@@ -14,7 +14,7 @@ import { EventDetailCard } from "@/components/schedule/event-detail-card";
 import { CalendarNavigation } from "@/components/schedule/calendar-navigation";
 import { useScheduleStore } from "@/lib/store/schedule-store";
 import { ScheduleEvent } from "@/types";
-import { startOfMonth, endOfMonth, format } from "date-fns";
+import { startOfMonth, endOfMonth } from "date-fns";
 
 export default function SchedulePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
