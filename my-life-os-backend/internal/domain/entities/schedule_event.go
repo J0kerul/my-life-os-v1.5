@@ -46,6 +46,7 @@ type ScheduleEvent struct {
 	// Recurrence
 	Recurrence        string     `gorm:"type:text;not null;default:'none';index" json:"recurrence"`
 	RecurrenceEndDate *time.Time `gorm:"type:timestamptz;index" json:"recurrenceEndDate,omitempty"`
+	RecurrenceDays    *string    `gorm:"type:text" json:"recurrenceDays,omitempty"` // JSON array of weekday numbers (0=Sunday, 1=Monday, etc.)
 
 	// Exception handling for recurring events
 	ParentEventID *uuid.UUID `gorm:"type:uuid;index" json:"parentEventId,omitempty"`

@@ -33,6 +33,7 @@ type CreateEventRequest struct {
 	LinkedTaskID      *string `json:"linkedTaskId"`      // Optional UUID as string
 	Recurrence        string  `json:"recurrence"`        // none, daily, weekly, monthly, yearly
 	RecurrenceEndDate *string `json:"recurrenceEndDate"` // Optional ISO 8601 format
+	RecurrenceDays    *string `json:"recurrenceDays"`    // Optional JSON array of weekday numbers (0=Sunday, 1=Monday, etc.)
 }
 
 // UpdateEventRequest represents the request body for updating a schedule event
@@ -47,6 +48,7 @@ type UpdateEventRequest struct {
 	LinkedTaskID      *string `json:"linkedTaskId"`      // Optional UUID as string
 	Recurrence        string  `json:"recurrence"`        // none, daily, weekly, monthly, yearly
 	RecurrenceEndDate *string `json:"recurrenceEndDate"` // Optional ISO 8601 format
+	RecurrenceDays    *string `json:"recurrenceDays"`    // Optional JSON array of weekday numbers (0=Sunday, 1=Monday, etc.)
 	UpdateType        string  `json:"updateType"`        // "single" or "future"
 }
 
@@ -140,6 +142,7 @@ func (h *ScheduleEventHandler) CreateEvent(c *fiber.Ctx) error {
 		LinkedTaskID:      linkedTaskID,
 		Recurrence:        req.Recurrence,
 		RecurrenceEndDate: recurrenceEndDate,
+		RecurrenceDays:    req.RecurrenceDays,
 	}
 
 	if err := h.scheduleService.CreateEvent(event); err != nil {
@@ -324,6 +327,7 @@ func (h *ScheduleEventHandler) UpdateEvent(c *fiber.Ctx) error {
 	existingEvent.LinkedTaskID = linkedTaskID
 	existingEvent.Recurrence = req.Recurrence
 	existingEvent.RecurrenceEndDate = recurrenceEndDate
+	existingEvent.RecurrenceDays = req.RecurrenceDays
 
 	// Default update type to "single" if not provided
 	updateType := req.UpdateType

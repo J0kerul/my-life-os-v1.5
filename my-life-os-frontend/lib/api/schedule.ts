@@ -48,6 +48,18 @@ async function fetchWithAuth(url: string, options: RequestInit): Promise<Respons
   return response;
 }
 
+// Helper to parse recurrence days from backend string to array
+function parseRecurrenceDays(event: any): ScheduleEvent {
+  if (event.recurrenceDays && typeof event.recurrenceDays === 'string') {
+    try {
+      event.recurrenceDays = JSON.parse(event.recurrenceDays);
+    } catch {
+      event.recurrenceDays = undefined;
+    }
+  }
+  return event;
+}
+
 // Get events in date range
 export async function getEvents(
   startDate: string, // ISO 8601 format
@@ -72,7 +84,7 @@ export async function getEvents(
   }
 
   const data: ScheduleEventsResponse = await response.json();
-  return data.events || [];
+  return (data.events || []).map(parseRecurrenceDays);
 }
 
 // Get single event
@@ -90,7 +102,7 @@ export async function getEvent(eventId: string): Promise<ScheduleEvent> {
   }
 
   const data: ScheduleEventResponse = await response.json();
-  return data.event;
+  return parseRecurrenceDays(data.event);
 }
 
 // Create new event
@@ -101,6 +113,9 @@ export async function createEvent(
   const finalEventData = {
     ...eventData,
     isAllDay: eventData.domain === "Holidays" ? true : eventData.isAllDay,
+    recurrenceDays: eventData.recurrenceDays
+      ? JSON.stringify(eventData.recurrenceDays)
+      : undefined,
   };
 
   const response = await fetchWithAuth(`${API_BASE}/schedule`, {
@@ -118,8 +133,8 @@ export async function createEvent(
 
   const data: ScheduleEventResponse = await response.json();
   return {
-    event: data.event,
-    conflicts: data.conflicts || [],
+    event: parseRecurrenceDays(data.event),
+    conflicts: (data.conflicts || []).map(parseRecurrenceDays),
   };
 }
 
@@ -134,6 +149,9 @@ export async function updateEvent(
     ...eventData,
     isAllDay: eventData.domain === "Holidays" ? true : eventData.isAllDay,
     updateType: updateType || "single", // Add updateType to request
+    recurrenceDays: eventData.recurrenceDays
+      ? JSON.stringify(eventData.recurrenceDays)
+      : undefined,
   };
 
   const response = await fetchWithAuth(`${API_BASE}/schedule/${eventId}`, {
@@ -150,7 +168,7 @@ export async function updateEvent(
   }
 
   const data: ScheduleEventResponse = await response.json();
-  return data.event;
+  return parseRecurrenceDays(data.event);
 }
 
 // Delete event

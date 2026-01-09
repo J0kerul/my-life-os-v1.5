@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -148,6 +149,16 @@ func (s *scheduleEventService) expandRecurringEvent(event *entities.ScheduleEven
 		return instances
 	}
 
+	// Parse recurrence days for weekly events
+	var recurrenceDays []int
+	if event.Recurrence == entities.RecurrenceWeekly && event.RecurrenceDays != nil && *event.RecurrenceDays != "" {
+		// Parse JSON array of weekday numbers
+		var days []int
+		if err := json.Unmarshal([]byte(*event.RecurrenceDays), &days); err == nil {
+			recurrenceDays = days
+		}
+	}
+
 	current := event.StartDate
 	duration := event.EndDate.Sub(event.StartDate)
 
@@ -166,8 +177,21 @@ func (s *scheduleEventService) expandRecurringEvent(event *entities.ScheduleEven
 			break
 		}
 
-		// If instance is in range, add it
-		if !current.Before(rangeStart) {
+		// For weekly recurrence with specific days, check if current weekday matches
+		shouldInclude := true
+		if event.Recurrence == entities.RecurrenceWeekly && len(recurrenceDays) > 0 {
+			currentWeekday := int(current.Weekday()) // 0=Sunday, 1=Monday, etc.
+			shouldInclude = false
+			for _, day := range recurrenceDays {
+				if day == currentWeekday {
+					shouldInclude = true
+					break
+				}
+			}
+		}
+
+		// If instance is in range and should be included, add it
+		if !current.Before(rangeStart) && shouldInclude {
 			instance := *event
 			instance.StartDate = current
 			instance.EndDate = current.Add(duration)
@@ -179,7 +203,13 @@ func (s *scheduleEventService) expandRecurringEvent(event *entities.ScheduleEven
 		case entities.RecurrenceDaily:
 			current = current.AddDate(0, 0, 1)
 		case entities.RecurrenceWeekly:
-			current = current.AddDate(0, 0, 7)
+			// If we have specific days, move day by day and check
+			// Otherwise, move by week
+			if len(recurrenceDays) > 0 {
+				current = current.AddDate(0, 0, 1)
+			} else {
+				current = current.AddDate(0, 0, 7)
+			}
 		case entities.RecurrenceMonthly:
 			current = current.AddDate(0, 1, 0)
 		case entities.RecurrenceYearly:

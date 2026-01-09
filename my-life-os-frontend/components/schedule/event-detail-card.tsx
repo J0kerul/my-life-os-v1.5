@@ -80,6 +80,7 @@ export function EventDetailCard({
   const [description, setDescription] = useState("");
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
   const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
@@ -106,6 +107,7 @@ export function EventDetailCard({
       setDescription(event.description || "");
       setRecurrenceType(event.recurrence);
       setRecurrenceEndDate(event.recurrenceEndDate || "");
+      setRecurrenceDays(event.recurrenceDays || []);
     } else if (selectedDate) {
       // Create mode with selected date
       const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -120,6 +122,7 @@ export function EventDetailCard({
       setDescription("");
       setRecurrenceType("none");
       setRecurrenceEndDate("");
+      setRecurrenceDays([]);
     } else {
       // Reset
       resetForm();
@@ -139,6 +142,7 @@ export function EventDetailCard({
     setDescription("");
     setRecurrenceType("none");
     setRecurrenceEndDate("");
+    setRecurrenceDays([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,6 +162,10 @@ export function EventDetailCard({
       recurrenceEndDate:
         recurrenceType !== "none" && recurrenceEndDate
           ? `${recurrenceEndDate}T23:59:59Z`
+          : undefined,
+      recurrenceDays:
+        recurrenceType === "weekly" && recurrenceDays.length > 0
+          ? recurrenceDays
           : undefined,
     };
 
@@ -445,6 +453,50 @@ export function EventDetailCard({
               ))}
             </select>
           </div>
+
+          {/* Weekday Selection for Weekly Recurrence */}
+          {recurrenceType === "weekly" && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Repeat on
+              </label>
+              <div className="grid grid-cols-7 gap-2">
+                {[
+                  { day: 1, label: "Mo" },
+                  { day: 2, label: "Tu" },
+                  { day: 3, label: "We" },
+                  { day: 4, label: "Th" },
+                  { day: 5, label: "Fr" },
+                  { day: 6, label: "Sa" },
+                  { day: 0, label: "Su" },
+                ].map(({ day, label }) => {
+                  const isSelected = recurrenceDays.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setRecurrenceDays(
+                            recurrenceDays.filter((d) => d !== day)
+                          );
+                        } else {
+                          setRecurrenceDays([...recurrenceDays, day]);
+                        }
+                      }}
+                      className={`px-2 py-2 text-xs rounded-lg border transition-all ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-muted-foreground/20 hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Recurrence End Date */}
           {recurrenceType !== "none" && (

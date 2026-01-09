@@ -208,6 +208,7 @@ export interface ScheduleEvent {
   linkedTaskId?: string;
   recurrence: RecurrenceType;
   recurrenceEndDate?: string; // ISO 8601 format
+  recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
   parentEventId?: string;
   exceptionDate?: string;
   createdAt: string;
@@ -225,6 +226,7 @@ export interface CreateScheduleEventRequest {
   linkedTaskId?: string;
   recurrence?: RecurrenceType;
   recurrenceEndDate?: string; // ISO 8601 format
+  recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
 }
 
 export interface UpdateScheduleEventRequest {
@@ -238,6 +240,7 @@ export interface UpdateScheduleEventRequest {
   linkedTaskId?: string;
   recurrence?: RecurrenceType;
   recurrenceEndDate?: string; // ISO 8601 format
+  recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
   updateType?: UpdateType; // "single" or "future"
 }
 
