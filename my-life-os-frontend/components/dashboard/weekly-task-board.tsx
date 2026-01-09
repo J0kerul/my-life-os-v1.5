@@ -60,7 +60,7 @@ export function WeeklyTaskBoard({
       {/* Widget Card */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             {/* Icon - Colored */}
             <div className="p-2 bg-blue-500/10 rounded-lg">

@@ -8,6 +8,7 @@ import { BurgerMenu } from "@/components/burger-menu";
 import { Sidebar } from "@/components/sidebar";
 import { WeeklyTaskBoard } from "@/components/dashboard/weekly-task-board";
 import { TodaysRoutinesWidget } from "@/components/dashboard/todays-routines-widget";
+import { WeekAheadWidget } from "@/components/dashboard/week-ahead-widget";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -85,7 +86,15 @@ export default function DashboardPage() {
         <div className="px-36 pr-16">
           {/* 3-Column Grid */}
           <div className="grid grid-cols-3 gap-6">
-            {/* Row 1: Weekly Task Board (Spans 2 columns) */}
+            {/* Row 1: Week Ahead Widget (Spans all 3 columns) */}
+            <div className="col-span-3">
+              <WeekAheadWidget
+                isExpanded={areWidgetsExpanded}
+                onToggleExpand={handleToggleWidgets}
+              />
+            </div>
+
+            {/* Row 2: Weekly Task Board (Spans 2 columns) */}
             <div className="col-span-2">
               <WeeklyTaskBoard
                 isExpanded={areWidgetsExpanded}
