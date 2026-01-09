@@ -94,13 +94,6 @@ export function WeekAheadWidget({
 
             {/* Title */}
             <h2 className="text-lg font-semibold text-gray-200">Week Ahead</h2>
-
-            {/* Badge - Event count */}
-            {!isExpanded && (
-              <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
-                {events.length}
-              </span>
-            )}
           </div>
 
           {/* Expand/Collapse Button */}

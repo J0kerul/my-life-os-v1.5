@@ -102,7 +102,11 @@ export default function SchedulePage() {
                   currentDate={currentDate}
                   events={events}
                   selectedDomains={domainFilters}
-                  onDateClick={(date) => setCurrentDate(date)}
+                  onDateClick={(date) => {
+                    setCurrentDate(date);
+                    setSelectedEvent(null);
+                    setShowEventDetail(true);
+                  }}
                   onEventClick={(event) => {
                     setSelectedEvent(event);
                     setShowEventDetail(true);

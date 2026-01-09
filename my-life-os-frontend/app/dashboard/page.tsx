@@ -19,6 +19,8 @@ export default function DashboardPage() {
 
   // Widget expansion state - both widgets expand/collapse together
   const [areWidgetsExpanded, setAreWidgetsExpanded] = useState(false);
+  const [isScheduleWidgetExpanded, setIsScheduleWidgetExpanded] =
+    useState(false);
 
   // Zeit-basierte Begrüßung
   const getGreeting = () => {
@@ -89,8 +91,10 @@ export default function DashboardPage() {
             {/* Row 1: Week Ahead Widget (Spans all 3 columns) */}
             <div className="col-span-3">
               <WeekAheadWidget
-                isExpanded={areWidgetsExpanded}
-                onToggleExpand={handleToggleWidgets}
+                isExpanded={isScheduleWidgetExpanded}
+                onToggleExpand={() =>
+                  setIsScheduleWidgetExpanded((prev) => !prev)
+                }
               />
             </div>
 
