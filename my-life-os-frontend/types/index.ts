@@ -241,7 +241,8 @@ export interface UpdateScheduleEventRequest {
   recurrence?: RecurrenceType;
   recurrenceEndDate?: string; // ISO 8601 format
   recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
-  updateType?: UpdateType; // "single" or "future"
+  updateType?: UpdateType; // "single", "future", or "all"
+  instanceDate?: string; // ISO 8601 format - original instance date for recurring event updates
 }
 
 export interface ScheduleEventsResponse {
