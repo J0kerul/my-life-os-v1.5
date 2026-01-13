@@ -27,8 +27,16 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations (User + RefreshToken + Task + Routine + RoutineCompletion)
-	if err := database.AutoMigrate(db, &entities.User{}, &entities.RefreshToken{}, &entities.Task{}, &entities.Routine{}, &entities.RoutineCompletion{}); err != nil {
+	// Run migrations (User + RefreshToken + Task + Routine + RoutineCompletion + Event + EventException)
+	if err := database.AutoMigrate(db,
+		&entities.User{},
+		&entities.RefreshToken{},
+		&entities.Task{},
+		&entities.Routine{},
+		&entities.RoutineCompletion{},
+		&entities.Event{},
+		&entities.EventException{},
+	); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
 
@@ -37,17 +45,20 @@ func main() {
 	tokenRepo := postgres.NewTokenRepository(db)
 	taskRepo := postgres.NewTaskRepository(db)
 	routineRepo := postgres.NewRoutineRepository(db)
+	eventRepo := postgres.NewEventRepository(db)
 
 	// Initialize Services (Business Logic Layer)
 	authService := service.NewAuthService(userRepo, tokenRepo, cfg.JWTSecret)
 	taskService := service.NewTaskService(taskRepo)
 	routineService := service.NewRoutineService(routineRepo)
+	eventService := service.NewEventService(eventRepo)
 
 	// Initialize Handlers (HTTP Layer)
 	isDev := cfg.Environment == "development"
 	authHdl := authHandler.NewAuthHandler(authService, isDev)
 	taskHdl := authHandler.NewTaskHandler(taskService)
 	routineHdl := authHandler.NewRoutineHandler(routineService)
+	eventHdl := authHandler.NewEventHandler(eventService)
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
@@ -116,8 +127,13 @@ func main() {
 	routines.Patch("/:id/skip", routineHdl.SkipRoutine)         // PATCH /api/routines/:id/skip
 	routines.Delete("/:id", routineHdl.DeleteRoutine)           // DELETE /api/routines/:id
 
-	// TODO: Schedule routes (not yet implemented)
-	// schedule := api.Group("/schedule", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	// Event routes (protected - require authentication)
+	events := api.Group("/events", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	events.Get("/", eventHdl.GetEvents)         // GET /api/events?start=...&end=...
+	events.Post("/", eventHdl.CreateEvent)      // POST /api/events
+	events.Get("/:id", eventHdl.GetEvent)       // GET /api/events/:id
+	events.Put("/:id", eventHdl.UpdateEvent)    // PUT /api/events/:id
+	events.Delete("/:id", eventHdl.DeleteEvent) // DELETE /api/events/:id (requires body with deleteScope)
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)
