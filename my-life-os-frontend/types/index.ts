@@ -174,83 +174,99 @@ export interface RoutineCompletion {
 }
 
 // ============================================
-// SCHEDULE TYPES (Sprint 4)
+// SCHEDULE/EVENT TYPES (Sprint 5)
 // ============================================
 
-export type ScheduleDomain = 
-  | "Personal"
-  | "Family"
-  | "Working"
+export type EventDomain = 
+  | "Work"
   | "University"
+  | "Personal"
+  | "Coding Time"
+  | "Study"
   | "Health"
   | "Social"
-  | "Coding"
-  | "Holidays";
+  | "Holidays"
+  | "Travel"
+  | "Maintenance"
+  | "Entertainment"
+  | "Family";
 
-export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "yearly";
+export type RecurrenceType = "daily" | "weekly" | "monthly" | "yearly";
+
+export type EditScope = "this" | "following" | "all";
+
+export type DeleteScope = "this" | "following" | "all";
 
 export type CalendarView = "month" | "week" | "day" | "agenda";
 
-export type UpdateType = "single" | "future";
-
-export type DeleteType = "single" | "future" | "all";
-
-export interface ScheduleEvent {
+export interface Event {
   id: string;
   userId: string;
   title: string;
-  description: string;
-  domain: ScheduleDomain;
-  startDate: string; // ISO 8601 format
-  endDate: string;   // ISO 8601 format
-  isAllDay: boolean;
-  location: string;
-  linkedTaskId?: string;
-  recurrence: RecurrenceType;
-  recurrenceEndDate?: string; // ISO 8601 format
-  recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
-  parentEventId?: string;
-  exceptionDate?: string;
+  startDate: string;        // ISO 8601 format
+  endDate: string | null;   // ISO 8601 format, null = All Day
+  allDay: boolean;
+  domain: EventDomain;
+  isRecurring: boolean;
+  recurrenceType: RecurrenceType | null;
+  recurrenceEnd: string | null;  // ISO 8601 format, null = never ends
+  recurrenceDays: string | null; // JSON array: ["monday","wednesday"]
+  hideFromAgenda: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateScheduleEventRequest {
+export interface EventException {
+  id: string;
+  eventId: string;
+  userId: string;
+  originalDate: string;     // ISO 8601 format
+  type: "deleted" | "modified";
+  modifiedTitle?: string | null;
+  modifiedStartDate?: string | null;
+  modifiedEndDate?: string | null;
+  modifiedDomain?: string | null;
+  modifiedAllDay?: boolean | null;
+  createdAt: string;
+}
+
+export interface CreateEventRequest {
   title: string;
-  description?: string;
-  domain: ScheduleDomain;
-  startDate: string; // ISO 8601 format
-  endDate: string;   // ISO 8601 format
-  isAllDay?: boolean;
-  location?: string;
-  linkedTaskId?: string;
-  recurrence?: RecurrenceType;
-  recurrenceEndDate?: string; // ISO 8601 format
-  recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
+  startDate: string;        // ISO 8601 format
+  endDate?: string | null;  // ISO 8601 format
+  allDay?: boolean;
+  domain: EventDomain;
+  isRecurring?: boolean;
+  recurrenceType?: RecurrenceType | null;
+  recurrenceEnd?: string | null;
+  recurrenceDays?: string | null; // JSON array: ["monday","wednesday"]
+  hideFromAgenda?: boolean;
 }
 
-export interface UpdateScheduleEventRequest {
+export interface UpdateEventRequest {
+  occurrenceDate?: string | null; // Required for "this" or "following" scope
+  editScope: EditScope;
   title: string;
-  description?: string;
-  domain: ScheduleDomain;
-  startDate: string; // ISO 8601 format
-  endDate: string;   // ISO 8601 format
-  isAllDay?: boolean;
-  location?: string;
-  linkedTaskId?: string;
-  recurrence?: RecurrenceType;
-  recurrenceEndDate?: string; // ISO 8601 format
-  recurrenceDays?: number[]; // Array of weekday numbers (0=Sunday, 1=Monday, etc.)
-  updateType?: UpdateType; // "single", "future", or "all"
-  instanceDate?: string; // ISO 8601 format - original instance date for recurring event updates
+  startDate: string;
+  endDate?: string | null;
+  allDay?: boolean;
+  domain: EventDomain;
+  recurrenceType?: RecurrenceType | null;
+  recurrenceEnd?: string | null;
+  recurrenceDays?: string | null;
+  hideFromAgenda?: boolean;
 }
 
-export interface ScheduleEventsResponse {
-  events: ScheduleEvent[];
+export interface DeleteEventRequest {
+  occurrenceDate?: string | null; // Required for "this" or "following" scope
+  deleteScope: DeleteScope;
 }
 
-export interface ScheduleEventResponse {
-  event: ScheduleEvent;
+export interface EventsResponse {
+  events: Event[];
+}
+
+export interface EventResponse {
+  event: Event;
   message?: string;
-  conflicts?: ScheduleEvent[]; // Returned when creating an event
 }
