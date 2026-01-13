@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useEventStore } from "@/lib/store/event-store";
 import type { CreateEventRequest, EventDomain, RecurrenceType } from "@/types";
@@ -8,11 +8,15 @@ import type { CreateEventRequest, EventDomain, RecurrenceType } from "@/types";
 interface QuickAddEventDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  prefilledDate?: string; // YYYY-MM-DD
+  prefilledTime?: string; // HH:mm
 }
 
 export function QuickAddEventDialog({
   isOpen,
   onClose,
+  prefilledDate,
+  prefilledTime,
 }: QuickAddEventDialogProps) {
   const { createEvent } = useEventStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -20,8 +24,8 @@ export function QuickAddEventDialog({
   // Form state
   const [formData, setFormData] = useState({
     title: "",
-    startDate: "",
-    startTime: "",
+    startDate: prefilledDate || "",
+    startTime: prefilledTime || "",
     endDate: "",
     endTime: "",
     allDay: false,
@@ -32,6 +36,16 @@ export function QuickAddEventDialog({
     recurrenceDays: [] as string[],
     hideFromAgenda: false,
   });
+
+  // Update form when prefilled values change
+  useEffect(() => {
+    if (prefilledDate) {
+      setFormData((prev) => ({ ...prev, startDate: prefilledDate }));
+    }
+    if (prefilledTime) {
+      setFormData((prev) => ({ ...prev, startTime: prefilledTime }));
+    }
+  }, [prefilledDate, prefilledTime]);
 
   // Reset form
   const resetForm = () => {
@@ -266,41 +280,79 @@ export function QuickAddEventDialog({
             </div>
           )}
 
-          {/* Recurring Checkbox */}
-          <div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    isRecurring: !formData.isRecurring,
-                  })
-                }
-                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                  formData.isRecurring
-                    ? "bg-primary border-primary"
-                    : "border-muted-foreground hover:border-primary"
-                }`}
-              >
-                {formData.isRecurring && (
-                  <svg
-                    className="w-3 h-3 text-primary-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </button>
-              <span className="text-sm font-medium">Recurring Event</span>
-            </label>
+          {/* Recurring & Hide from Agenda - Side by Side */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      isRecurring: !formData.isRecurring,
+                    })
+                  }
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                    formData.isRecurring
+                      ? "bg-primary border-primary"
+                      : "border-muted-foreground hover:border-primary"
+                  }`}
+                >
+                  {formData.isRecurring && (
+                    <svg
+                      className="w-3 h-3 text-primary-foreground"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </button>
+                <span className="text-sm font-medium">Recurring</span>
+              </label>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      hideFromAgenda: !formData.hideFromAgenda,
+                    })
+                  }
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                    formData.hideFromAgenda
+                      ? "bg-primary border-primary"
+                      : "border-muted-foreground hover:border-primary"
+                  }`}
+                >
+                  {formData.hideFromAgenda && (
+                    <svg
+                      className="w-3 h-3 text-primary-foreground"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </button>
+                <span className="text-sm font-medium">Hide Agenda</span>
+              </label>
+            </div>
           </div>
 
           {/* Recurrence Options */}
@@ -376,43 +428,6 @@ export function QuickAddEventDialog({
               </div>
             </>
           )}
-
-          {/* Hide from Agenda */}
-          <div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    hideFromAgenda: !formData.hideFromAgenda,
-                  })
-                }
-                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                  formData.hideFromAgenda
-                    ? "bg-primary border-primary"
-                    : "border-muted-foreground hover:border-primary"
-                }`}
-              >
-                {formData.hideFromAgenda && (
-                  <svg
-                    className="w-3 h-3 text-primary-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </button>
-              <span className="text-sm font-medium">Hide from Agenda</span>
-            </label>
-          </div>
 
           {/* Submit */}
           <button

@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useEventStore } from "@/lib/store/event-store";
+import { QuickAddEventDialog } from "./quick-add-event-dialog";
 import { format, isSameDay } from "date-fns";
 
 export function DayView() {
   const { events, currentDate, selectEvent } = useEventStore();
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<string>("");
 
   // Hours (0-23)
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -50,79 +54,97 @@ export function DayView() {
     return colors[domain] || "bg-primary";
   };
 
+  const handleSlotClick = (hour: number) => {
+    setSelectedTime(format(new Date().setHours(hour, 0), "HH:mm"));
+    setIsQuickAddOpen(true);
+  };
+
   const allDayEvents = getAllDayEvents();
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* All-Day Events */}
-      {allDayEvents.length > 0 && (
-        <div className="border-b border-border bg-card p-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            All Day
-          </h3>
-          <div className="space-y-2">
-            {allDayEvents.map((event) => (
-              <button
-                key={event.id}
-                onClick={() => selectEvent(event)}
-                className={`w-full text-left px-4 py-2 rounded ${getDomainColor(
-                  event.domain
-                )} text-white hover:opacity-80 transition-opacity`}
-              >
-                <div className="font-medium">{event.title}</div>
-                <div className="text-xs opacity-90">{event.domain}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+    <>
+      <QuickAddEventDialog
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        prefilledDate={format(currentDate, "yyyy-MM-dd")}
+        prefilledTime={selectedTime}
+      />
 
-      {/* Time Grid */}
-      <div className="flex-1 overflow-auto">
-        {hours.map((hour) => {
-          const hourEvents = getEventsForHour(hour);
-
-          return (
-            <div
-              key={hour}
-              className="flex border-b border-border min-h-[80px]"
-            >
-              {/* Hour Label */}
-              <div className="w-20 flex-shrink-0 bg-card p-3 text-sm text-muted-foreground border-r border-border">
-                {format(new Date().setHours(hour, 0), "HH:mm")}
-              </div>
-
-              {/* Hour Content */}
-              <div className="flex-1 bg-card p-2">
-                {hourEvents.length > 0 ? (
-                  <div className="space-y-2">
-                    {hourEvents.map((event) => (
-                      <button
-                        key={event.id}
-                        onClick={() => selectEvent(event)}
-                        className={`w-full text-left px-4 py-3 rounded ${getDomainColor(
-                          event.domain
-                        )} text-white hover:opacity-80 transition-opacity`}
-                      >
-                        <div className="font-medium">{event.title}</div>
-                        <div className="text-xs opacity-90">
-                          {format(new Date(event.startDate), "HH:mm")}
-                          {event.endDate &&
-                            ` - ${format(new Date(event.endDate), "HH:mm")}`}
-                          {" • "}
-                          {event.domain}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="h-full hover:bg-accent/50 rounded transition-colors cursor-pointer" />
-                )}
-              </div>
+      <div className="h-full flex flex-col overflow-hidden">
+        {/* All-Day Events - Only show if there are any */}
+        {allDayEvents.length > 0 && (
+          <div className="border-b border-border bg-card p-4">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+              All Day
+            </h3>
+            <div className="space-y-2">
+              {allDayEvents.map((event) => (
+                <button
+                  key={event.id}
+                  onClick={() => selectEvent(event)}
+                  className={`w-full text-left px-4 py-2 rounded ${getDomainColor(
+                    event.domain
+                  )} text-white hover:opacity-80 transition-opacity`}
+                >
+                  <div className="font-medium">{event.title}</div>
+                  <div className="text-xs opacity-90">{event.domain}</div>
+                </button>
+              ))}
             </div>
-          );
-        })}
+          </div>
+        )}
+
+        {/* Time Grid */}
+        <div className="flex-1 overflow-auto">
+          {hours.map((hour) => {
+            const hourEvents = getEventsForHour(hour);
+
+            return (
+              <div
+                key={hour}
+                className="flex border-b border-border min-h-[80px]"
+              >
+                {/* Hour Label */}
+                <div className="w-20 flex-shrink-0 bg-card p-3 text-sm text-muted-foreground border-r border-border">
+                  {format(new Date().setHours(hour, 0), "HH:mm")}
+                </div>
+
+                {/* Hour Content */}
+                <div
+                  className="flex-1 bg-card p-2 cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() => handleSlotClick(hour)}
+                >
+                  {hourEvents.length > 0 && (
+                    <div className="space-y-2">
+                      {hourEvents.map((event) => (
+                        <button
+                          key={event.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectEvent(event);
+                          }}
+                          className={`w-full text-left px-4 py-3 rounded ${getDomainColor(
+                            event.domain
+                          )} text-white hover:opacity-80 transition-opacity`}
+                        >
+                          <div className="font-medium">{event.title}</div>
+                          <div className="text-xs opacity-90">
+                            {format(new Date(event.startDate), "HH:mm")}
+                            {event.endDate &&
+                              ` - ${format(new Date(event.endDate), "HH:mm")}`}
+                            {" • "}
+                            {event.domain}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

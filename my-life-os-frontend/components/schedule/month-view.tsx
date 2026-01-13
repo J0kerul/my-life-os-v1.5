@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useEventStore } from "@/lib/store/event-store";
+import { QuickAddEventDialog } from "./quick-add-event-dialog";
 import {
   format,
   startOfMonth,
@@ -13,6 +15,8 @@ import {
 
 export function MonthView() {
   const { events, currentDate, selectEvent } = useEventStore();
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   // Get all days to display (including prev/next month days)
   const monthStart = startOfMonth(currentDate);
@@ -58,70 +62,87 @@ export function MonthView() {
     return colors[domain] || "bg-primary";
   };
 
+  const handleDayClick = (day: Date) => {
+    setSelectedDate(format(day, "yyyy-MM-dd"));
+    setIsQuickAddOpen(true);
+  };
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Weekday Headers */}
-      <div className="grid grid-cols-7 gap-px bg-border mb-px">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-          <div
-            key={day}
-            className="bg-card p-2 text-center text-sm font-medium text-muted-foreground"
-          >
-            {day}
-          </div>
-        ))}
-      </div>
+    <>
+      <QuickAddEventDialog
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        prefilledDate={selectedDate}
+      />
 
-      {/* Calendar Grid */}
-      <div className="flex-1 grid grid-cols-7 gap-px bg-border overflow-auto">
-        {days.map((day, idx) => {
-          const dayEvents = getEventsForDay(day);
-          const isCurrentMonth = isSameMonth(day, currentDate);
-          const isDayToday = isToday(day);
-
-          return (
+      <div className="h-full flex flex-col">
+        {/* Weekday Headers */}
+        <div className="grid grid-cols-7 gap-px bg-border mb-px">
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
             <div
-              key={idx}
-              className={`bg-card p-2 min-h-[100px] ${
-                !isCurrentMonth ? "opacity-40" : ""
-              }`}
+              key={day}
+              className="bg-card p-2 text-center text-sm font-medium text-muted-foreground"
             >
-              {/* Day Number */}
-              <div className="flex items-center justify-between mb-1">
-                <span
-                  className={`text-sm font-medium ${
-                    isDayToday
-                      ? "bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center"
-                      : ""
-                  }`}
-                >
-                  {format(day, "d")}
-                </span>
-              </div>
-
-              {/* Events */}
-              <div className="space-y-1">
-                {dayEvents.slice(0, 3).map((event) => (
-                  <button
-                    key={event.id}
-                    onClick={() => selectEvent(event)}
-                    className={`w-full text-left px-2 py-0.5 rounded text-xs truncate ${getDomainColor(
-                      event.domain
-                    )} text-white hover:opacity-80 transition-opacity`}
-                  >
-                    {event.allDay ? "📅" : "🕐"} {event.title}
-                  </button>
-                ))}
-                {dayEvents.length > 3 && (
-                  <div className="text-xs text-muted-foreground px-2">
-                    +{dayEvents.length - 3} more
-                  </div>
-                )}
-              </div>
+              {day}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="flex-1 grid grid-cols-7 gap-px bg-border overflow-auto">
+          {days.map((day, idx) => {
+            const dayEvents = getEventsForDay(day);
+            const isCurrentMonth = isSameMonth(day, currentDate);
+            const isDayToday = isToday(day);
+
+            return (
+              <div
+                key={idx}
+                onClick={() => handleDayClick(day)}
+                className={`bg-card p-2 min-h-[100px] cursor-pointer hover:bg-accent transition-colors ${
+                  !isCurrentMonth ? "opacity-40" : ""
+                }`}
+              >
+                {/* Day Number */}
+                <div className="flex items-center justify-between mb-1">
+                  <span
+                    className={`text-sm font-medium ${
+                      isDayToday
+                        ? "bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center"
+                        : ""
+                    }`}
+                  >
+                    {format(day, "d")}
+                  </span>
+                </div>
+
+                {/* Events */}
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Don't trigger day click
+                        selectEvent(event);
+                      }}
+                      className={`w-full text-left px-2 py-0.5 rounded text-xs truncate ${getDomainColor(
+                        event.domain
+                      )} text-white hover:opacity-80 transition-opacity`}
+                    >
+                      {event.allDay ? "📅" : "🕐"} {event.title}
+                    </button>
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <div className="text-xs text-muted-foreground px-2">
+                      +{dayEvents.length - 3} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
