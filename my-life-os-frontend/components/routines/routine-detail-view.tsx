@@ -213,34 +213,93 @@ export function RoutineDetailView() {
           )}
         </div>
 
-        {/* Frequency */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
-            <Repeat className="w-3 h-3" />
-            Frequency
-          </label>
-          {isEditing ? (
-            <select
-              value={editFrequency}
-              onChange={(e) =>
-                setEditFrequency(e.target.value as RoutineFrequency)
-              }
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
-            >
-              {FREQUENCIES.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div
-              className={`inline-flex items-center px-3 py-1 rounded-lg ${frequencyColor.bg} ${frequencyColor.text} text-sm font-medium`}
-            >
-              {selectedRoutine.frequency}
+        {/* Frequency, Time Type, Current Streak & Longest Streak - 4 Columns with Icons (View Mode) */}
+        {!isEditing ? (
+          <div className="grid grid-cols-4 gap-4">
+            {/* Frequency */}
+            <div className="text-center">
+              <div
+                className={`flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full ${frequencyColor.bg}`}
+              >
+                <Repeat className={`w-6 h-6 ${frequencyColor.text}`} />
+              </div>
+              <div className={`text-sm font-medium ${frequencyColor.text}`}>
+                {selectedRoutine.frequency}
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Time Type */}
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-blue-500/10">
+                <Clock className="w-6 h-6 text-blue-500" />
+              </div>
+              <div className="text-sm font-medium text-blue-500">
+                {TIME_TYPE_LABELS[selectedRoutine.timeType]}
+              </div>
+            </div>
+
+            {/* Current Streak */}
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-orange-500/10">
+                <Flame className="w-6 h-6 text-orange-500" />
+              </div>
+              <div className="text-sm font-medium text-orange-500">
+                {selectedRoutine.currentStreak}
+              </div>
+            </div>
+
+            {/* Longest Streak */}
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-purple-500/10">
+                <Flame className="w-6 h-6 text-purple-500" />
+              </div>
+              <div className="text-sm font-medium text-purple-500">
+                {selectedRoutine.longestStreak}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Edit Mode - Frequency & Time Type */
+          <>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                Frequency
+              </label>
+              <select
+                value={editFrequency}
+                onChange={(e) =>
+                  setEditFrequency(e.target.value as RoutineFrequency)
+                }
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                {FREQUENCIES.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                Time Type
+              </label>
+              <select
+                value={editTimeType}
+                onChange={(e) =>
+                  setEditTimeType(e.target.value as RoutineTimeType)
+                }
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                {TIME_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {TIME_TYPE_LABELS[t]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
 
         {/* Conditional Frequency Fields */}
         {isEditing && editFrequency === "Weekly" && (
@@ -378,33 +437,6 @@ export function RoutineDetailView() {
             </div>
           )}
 
-        {/* Time Type */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
-            <Clock className="w-3 h-3" />
-            Time
-          </label>
-          {isEditing ? (
-            <select
-              value={editTimeType}
-              onChange={(e) =>
-                setEditTimeType(e.target.value as RoutineTimeType)
-              }
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
-            >
-              {TIME_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {TIME_TYPE_LABELS[t]}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className="text-sm">
-              {TIME_TYPE_LABELS[selectedRoutine.timeType]}
-            </div>
-          )}
-        </div>
-
         {/* Specific Time */}
         {isEditing && editTimeType === "Specific" && (
           <div>
@@ -439,13 +471,15 @@ export function RoutineDetailView() {
 
           {/* Skippable */}
           <div className="flex items-center gap-3">
-            <div
+            <button
+              type="button"
               onClick={() => isEditing && setEditIsSkippable(!editIsSkippable)}
-              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+              disabled={!isEditing}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                 (isEditing ? editIsSkippable : selectedRoutine.isSkippable)
                   ? "bg-primary border-primary"
-                  : "border-muted-foreground"
-              } ${isEditing ? "cursor-pointer" : ""}`}
+                  : "border-muted-foreground hover:border-primary"
+              } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
             >
               {(isEditing ? editIsSkippable : selectedRoutine.isSkippable) && (
                 <svg
@@ -462,7 +496,7 @@ export function RoutineDetailView() {
                   />
                 </svg>
               )}
-            </div>
+            </button>
             <div className="flex items-center gap-2 text-sm">
               <SkipForward className="w-4 h-4 text-muted-foreground" />
               <span>Skippable (streak preserved)</span>
@@ -471,13 +505,15 @@ export function RoutineDetailView() {
 
           {/* Show Streak */}
           <div className="flex items-center gap-3">
-            <div
+            <button
+              type="button"
               onClick={() => isEditing && setEditShowStreak(!editShowStreak)}
-              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+              disabled={!isEditing}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                 (isEditing ? editShowStreak : selectedRoutine.showStreak)
                   ? "bg-primary border-primary"
-                  : "border-muted-foreground"
-              } ${isEditing ? "cursor-pointer" : ""}`}
+                  : "border-muted-foreground hover:border-primary"
+              } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
             >
               {(isEditing ? editShowStreak : selectedRoutine.showStreak) && (
                 <svg
@@ -494,60 +530,10 @@ export function RoutineDetailView() {
                   />
                 </svg>
               )}
-            </div>
+            </button>
             <div className="flex items-center gap-2 text-sm">
               <Flame className="w-4 h-4 text-muted-foreground" />
               <span>Show streak</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Streak Info (Read-only) */}
-        <div className="pt-4 border-t border-border">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Current Streak
-              </label>
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-orange-500" />
-                <span className="text-2xl font-bold text-orange-500">
-                  {selectedRoutine.currentStreak}
-                </span>
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Longest Streak
-              </label>
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-purple-500" />
-                <span className="text-2xl font-bold text-purple-500">
-                  {selectedRoutine.longestStreak}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Created/Updated Info */}
-        <div className="pt-4 border-t border-border">
-          <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-            <div>
-              <span className="font-medium">Created:</span>
-              <div className="mt-0.5">
-                {format(new Date(selectedRoutine.createdAt), "PPp", {
-                  locale: de,
-                })}
-              </div>
-            </div>
-            <div>
-              <span className="font-medium">Updated:</span>
-              <div className="mt-0.5">
-                {format(new Date(selectedRoutine.updatedAt), "PPp", {
-                  locale: de,
-                })}
-              </div>
             </div>
           </div>
         </div>
