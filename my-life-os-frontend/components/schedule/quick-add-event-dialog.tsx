@@ -26,7 +26,6 @@ export function QuickAddEventDialog({
     title: "",
     startDate: prefilledDate || "",
     startTime: prefilledTime || "",
-    endDate: "",
     endTime: "",
     allDay: false,
     domain: "Personal" as EventDomain,
@@ -53,7 +52,6 @@ export function QuickAddEventDialog({
       title: "",
       startDate: "",
       startTime: "",
-      endDate: "",
       endTime: "",
       allDay: false,
       domain: "Personal",
@@ -76,10 +74,11 @@ export function QuickAddEventDialog({
         ? new Date(formData.startDate).toISOString()
         : new Date(`${formData.startDate}T${formData.startTime}`).toISOString();
 
+      // End time is on the SAME DATE
       const endDateTime = formData.allDay
         ? null
-        : formData.endDate && formData.endTime
-        ? new Date(`${formData.endDate}T${formData.endTime}`).toISOString()
+        : formData.endTime
+        ? new Date(`${formData.startDate}T${formData.endTime}`).toISOString()
         : null;
 
       const eventData: CreateEventRequest = {
@@ -215,11 +214,15 @@ export function QuickAddEventDialog({
             </label>
           </div>
 
-          {/* Start Date/Time */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
+          {/* Date & Time */}
+          <div
+            className={`grid ${
+              formData.allDay ? "grid-cols-1" : "grid-cols-3"
+            } gap-2`}
+          >
+            <div className={formData.allDay ? "" : "col-span-1"}>
               <label className="block text-sm font-medium mb-1">
-                Start Date <span className="text-red-500">*</span>
+                Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -232,53 +235,36 @@ export function QuickAddEventDialog({
               />
             </div>
             {!formData.allDay && (
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  value={formData.startTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, startTime: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startTime: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endTime: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
+                  />
+                </div>
+              </>
             )}
           </div>
-
-          {/* End Date/Time (only for non-all-day) */}
-          {!formData.allDay && (
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endDate: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  value={formData.endTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endTime: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                />
-              </div>
-            </div>
-          )}
 
           {/* Recurring & Hide from Agenda - Side by Side */}
           <div className="grid grid-cols-2 gap-4">

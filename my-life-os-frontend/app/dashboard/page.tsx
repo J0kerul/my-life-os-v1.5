@@ -8,6 +8,7 @@ import { BurgerMenu } from "@/components/burger-menu";
 import { Sidebar } from "@/components/sidebar";
 import { WeeklyTaskBoard } from "@/components/dashboard/weekly-task-board";
 import { TodaysRoutinesWidget } from "@/components/dashboard/todays-routines-widget";
+import { WeekAheadWidget } from "@/components/dashboard/week-ahead-widget";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -16,8 +17,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Widget expansion state - both widgets expand/collapse together
-  const [areWidgetsExpanded, setAreWidgetsExpanded] = useState(false);
+  // Widget expansion states
+  const [areWidgetsExpanded, setAreWidgetsExpanded] = useState(false); // Task + Routines together
+  const [isWeekAheadExpanded, setIsWeekAheadExpanded] = useState(false); // Week Ahead separate
 
   // Zeit-basierte Begrüßung
   const getGreeting = () => {
@@ -82,8 +84,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Content Container */}
-        <div className="px-36 pr-16">
-          {/* 3-Column Grid */}
+        <div className="px-36 pr-16 space-y-6">
+          {/* Week Ahead Widget - Full Width */}
+          <div className="w-full">
+            <WeekAheadWidget
+              isExpanded={isWeekAheadExpanded}
+              onToggleExpand={() =>
+                setIsWeekAheadExpanded(!isWeekAheadExpanded)
+              }
+            />
+          </div>
+
+          {/* 3-Column Grid for other widgets */}
           <div className="grid grid-cols-3 gap-6">
             {/* Weekly Task Board (Spans 2 columns) */}
             <div className="col-span-2">

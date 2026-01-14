@@ -122,14 +122,14 @@ export function MonthView() {
                     <button
                       key={event.id}
                       onClick={(e) => {
-                        e.stopPropagation(); // Don't trigger day click
+                        e.stopPropagation();
                         selectEvent(event);
                       }}
                       className={`w-full text-left px-2 py-0.5 rounded text-xs truncate ${getDomainColor(
                         event.domain
                       )} text-white hover:opacity-80 transition-opacity`}
                     >
-                      {event.allDay ? "📅" : "🕐"} {event.title}
+                      {event.title}
                     </button>
                   ))}
                   {dayEvents.length > 3 && (
