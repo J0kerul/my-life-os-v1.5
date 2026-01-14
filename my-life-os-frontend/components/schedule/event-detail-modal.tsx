@@ -52,37 +52,34 @@ export function EventDetailModal({
             <h3 className="text-2xl font-semibold">{event.title}</h3>
           </div>
 
-          {/* Domain, Date, Time - 3 Columns */}
+          {/* Domain, Date, Time - 3 Columns with Icons */}
           <div className="grid grid-cols-3 gap-4">
             {/* Domain */}
-            <div>
-              <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
-                <Tag className="w-3 h-3" />
-                Domain
-              </label>
-              <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm">
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10">
+                <Tag className="w-6 h-6 text-primary" />
+              </div>
+              <div className="text-sm font-medium text-primary">
                 {event.domain}
               </div>
             </div>
 
             {/* Date */}
-            <div>
-              <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
-                <Calendar className="w-3 h-3" />
-                Date
-              </label>
-              <div className="text-sm">
-                {format(new Date(event.startDate), "MMM d")}
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-muted">
+                <Calendar className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <div className="text-sm font-medium">
+                {format(new Date(event.startDate), "d. MMM")}
               </div>
             </div>
 
             {/* Time */}
-            <div>
-              <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
-                <Clock className="w-3 h-3" />
-                Time
-              </label>
-              <div className="text-sm">
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-blue-500/10">
+                <Clock className="w-6 h-6 text-blue-500" />
+              </div>
+              <div className="text-sm font-medium">
                 {event.allDay ? (
                   "All Day"
                 ) : (
@@ -124,30 +121,11 @@ export function EventDetailModal({
             </div>
           )}
 
-          {/* Timestamps */}
-          <div className="pt-4 border-t border-border">
-            <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-              <div>
-                <span className="font-medium">Created:</span>
-                <div className="mt-0.5">
-                  {format(new Date(event.createdAt), "PPp")}
-                </div>
-              </div>
-              <div>
-                <span className="font-medium">Updated:</span>
-                <div className="mt-0.5">
-                  {format(new Date(event.updatedAt), "PPp")}
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* View Full Details Button */}
           <button
             onClick={() => {
               selectEvent(event);
               onClose();
-              // Navigate to schedule page would be nice but we're in a modal
             }}
             className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >

@@ -3,14 +3,7 @@
 import { useTaskStore } from "@/lib/store/task-store";
 import { useState, useEffect } from "react";
 import type { TaskPriority, TaskDomain } from "@/types";
-import { 
-  Calendar, 
-  Tag, 
-  Flag, 
-  Trash2, 
-  X,
-  Save
-} from "lucide-react";
+import { Calendar, Tag, Flag, Trash2, X, Save } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -38,12 +31,16 @@ interface TaskDetailModalProps {
   onClose: () => void;
 }
 
-export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProps) {
+export function TaskDetailModal({
+  taskId,
+  isOpen,
+  onClose,
+}: TaskDetailModalProps) {
   const { tasks, updateTask, deleteTask } = useTaskStore();
-  
+
   // Find task by ID
-  const task = tasks.find(t => t.id === taskId);
-  
+  const task = tasks.find((t) => t.id === taskId);
+
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -81,7 +78,7 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
 
   const handleSave = async () => {
     if (!task) return;
-    
+
     setIsSaving(true);
     try {
       await updateTask(task.id, {
@@ -89,7 +86,9 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
         description: editDescription || undefined,
         priority: editPriority,
         domain: editDomain,
-        deadline: editDeadline ? new Date(editDeadline).toISOString() : undefined,
+        deadline: editDeadline
+          ? new Date(editDeadline).toISOString()
+          : undefined,
       });
       setIsEditing(false);
     } catch (error) {
@@ -101,7 +100,7 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
 
   const handleDelete = async () => {
     if (!task) return;
-    
+
     try {
       await deleteTask(task.id);
       setShowDeleteConfirm(false);
@@ -118,23 +117,23 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
+        <div
           className="bg-card border-2 border-border rounded-xl w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-start justify-between p-6 border-b border-border">
+          <div className="flex items-center justify-center relative p-6 border-b border-border">
             <h2 className="text-xl font-bold">Task Details</h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-accent rounded transition-colors"
+              className="absolute right-6 p-1 hover:bg-accent rounded transition-colors"
             >
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
@@ -155,24 +154,72 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
                   className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               ) : (
-                <h3 className={`text-xl font-semibold ${task.status === "Done" ? "line-through text-muted-foreground" : ""}`}>
+                <h3
+                  className={`text-xl font-semibold ${
+                    task.status === "Done"
+                      ? "line-through text-muted-foreground"
+                      : ""
+                  }`}
+                >
                   {task.title}
                 </h3>
               )}
             </div>
 
-            {/* Priority, Domain & Deadline - All Side by Side */}
-            <div className="grid grid-cols-3 gap-4">
-              {/* Priority */}
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
-                  <Flag className="w-3 h-3" />
-                  Priority
-                </label>
-                {isEditing ? (
+            {/* Priority, Domain & Deadline - 3 Columns with Icons (View Mode) */}
+            {!isEditing ? (
+              <div className="grid grid-cols-3 gap-4">
+                {/* Priority */}
+                <div className="text-center">
+                  <div
+                    className={`flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full ${priorityColor.bg}`}
+                  >
+                    <span className={`text-2xl ${priorityColor.text}`}>
+                      {priorityColor.icon}
+                    </span>
+                  </div>
+                  <div className={`text-sm font-medium ${priorityColor.text}`}>
+                    {task.priority}
+                  </div>
+                </div>
+
+                {/* Domain */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10">
+                    <Tag className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-sm font-medium text-primary">
+                    {task.domain}
+                  </div>
+                </div>
+
+                {/* Deadline */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-muted">
+                    <Calendar className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div className="text-sm font-medium">
+                    {task.deadline
+                      ? format(new Date(task.deadline), "d. MMM", {
+                          locale: de,
+                        })
+                      : "No deadline"}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Edit Mode - 3 Columns Side by Side */
+              <div className="grid grid-cols-3 gap-4">
+                {/* Priority */}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                    Priority
+                  </label>
                   <select
                     value={editPriority}
-                    onChange={(e) => setEditPriority(e.target.value as TaskPriority)}
+                    onChange={(e) =>
+                      setEditPriority(e.target.value as TaskPriority)
+                    }
                     className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
                   >
                     {PRIORITIES.map((p) => (
@@ -181,26 +228,18 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
                       </option>
                     ))}
                   </select>
-                ) : (
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${priorityColor.bg}`}>
-                    <span className={`text-lg ${priorityColor.text}`}>{priorityColor.icon}</span>
-                    <span className={`text-sm font-medium ${priorityColor.text}`}>
-                      {task.priority}
-                    </span>
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Domain */}
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 blockitems-center gap-2">
-                  <Tag className="w-3 h-3" />
-                  Domain
-                </label>
-                {isEditing ? (
+                {/* Domain */}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                    Domain
+                  </label>
                   <select
                     value={editDomain}
-                    onChange={(e) => setEditDomain(e.target.value as TaskDomain)}
+                    onChange={(e) =>
+                      setEditDomain(e.target.value as TaskDomain)
+                    }
                     className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
                   >
                     {DOMAINS.map((d) => (
@@ -209,35 +248,22 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
                       </option>
                     ))}
                   </select>
-                ) : (
-                  <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-                    {task.domain}
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Deadline */}
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block items-center gap-2">
-                  <Calendar className="w-3 h-3" />
-                  Deadline
-                </label>
-                {isEditing ? (
+                {/* Deadline */}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                    Deadline
+                  </label>
                   <input
                     type="date"
                     value={editDeadline}
                     onChange={(e) => setEditDeadline(e.target.value)}
                     className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
                   />
-                ) : task.deadline ? (
-                  <div className="text-sm">
-                    {format(new Date(task.deadline), "PPP", { locale: de })}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground italic">No deadline</div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Description */}
             <div>
@@ -257,22 +283,10 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
                   {task.description}
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground italic">No description</div>
+                <div className="text-sm text-muted-foreground italic">
+                  No description
+                </div>
               )}
-            </div>
-
-            {/* Created/Updated Info */}
-            <div className="pt-4 border-t border-border">
-              <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-                <div>
-                  <span className="font-medium">Created:</span>
-                  <div className="mt-0.5">{format(new Date(task.createdAt), "PPp", { locale: de })}</div>
-                </div>
-                <div>
-                  <span className="font-medium">Updated:</span>
-                  <div className="mt-0.5">{format(new Date(task.updatedAt), "PPp", { locale: de })}</div>
-                </div>
-              </div>
             </div>
           </div>
 

@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { BurgerMenu } from "@/components/burger-menu";
 import { Sidebar } from "@/components/sidebar";
+import { useEventStore } from "@/lib/store/event-store";
 import { CalendarView } from "@/components/schedule/calendar-view";
 import { EventDetailView } from "@/components/schedule/event-detail-view";
-import { QuickAddEventDialog } from "@/components/schedule/quick-add-event-dialog";
-import { useEventStore } from "@/lib/store/event-store";
-import type { CalendarView as ViewType } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import type { CalendarView as CalendarViewType } from "@/types";
 
 export default function SchedulePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-
   const {
     currentView,
     currentDate,
@@ -24,54 +22,66 @@ export default function SchedulePage() {
     fetchEvents,
   } = useEventStore();
 
+  // Helper: Get start of week (Monday)
+  const getWeekStart = (date: Date | string) => {
+    const d = date instanceof Date ? new Date(date) : new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    const weekStart = new Date(d);
+    weekStart.setDate(diff);
+    return weekStart;
+  };
+
+  // Helper: Get date range for current view
+  const getDateRangeForView = () => {
+    // Convert currentDate to Date object if it's a string
+    const date =
+      currentDate instanceof Date ? currentDate : new Date(currentDate);
+    const start = new Date(date);
+    const end = new Date(date);
+
+    switch (currentView) {
+      case "month":
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        end.setMonth(end.getMonth() + 1);
+        end.setDate(0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "week":
+        const weekStart = getWeekStart(date);
+        start.setTime(weekStart.getTime());
+        start.setHours(0, 0, 0, 0);
+        end.setTime(weekStart.getTime());
+        end.setDate(end.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "day":
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "agenda":
+        start.setHours(0, 0, 0, 0);
+        end.setDate(end.getDate() + 30);
+        end.setHours(23, 59, 59, 999);
+        break;
+    }
+
+    return { start, end };
+  };
+
   // Fetch events when view or date changes
   useEffect(() => {
-    const { start, end } = getDateRangeForView(currentView, currentDate);
+    const { start, end } = getDateRangeForView();
     fetchEvents(start.toISOString(), end.toISOString());
   }, [currentView, currentDate, fetchEvents]);
 
-  // Navigate to previous period
-  const handlePrevious = () => {
-    const newDate = new Date(currentDate);
-    switch (currentView) {
-      case "month":
-        newDate.setMonth(newDate.getMonth() - 1);
-        break;
-      case "week":
-        newDate.setDate(newDate.getDate() - 7);
-        break;
-      case "day":
-        newDate.setDate(newDate.getDate() - 1);
-        break;
-      case "agenda":
-        newDate.setDate(newDate.getDate() - 30);
-        break;
-    }
-    setCurrentDate(newDate);
-  };
-
-  // Navigate to next period
-  const handleNext = () => {
-    const newDate = new Date(currentDate);
-    switch (currentView) {
-      case "month":
-        newDate.setMonth(newDate.getMonth() + 1);
-        break;
-      case "week":
-        newDate.setDate(newDate.getDate() + 7);
-        break;
-      case "day":
-        newDate.setDate(newDate.getDate() + 1);
-        break;
-      case "agenda":
-        newDate.setDate(newDate.getDate() + 30);
-        break;
-    }
-    setCurrentDate(newDate);
-  };
-
-  // Format current period text
+  // Helper: Get current period text
   const getCurrentPeriodText = () => {
+    // Convert currentDate to Date object if it's a string
+    const date =
+      currentDate instanceof Date ? currentDate : new Date(currentDate);
+
     const monthNames = [
       "January",
       "February",
@@ -89,189 +99,170 @@ export default function SchedulePage() {
 
     switch (currentView) {
       case "month":
-        return `${
-          monthNames[currentDate.getMonth()]
-        } ${currentDate.getFullYear()}`;
+        return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
       case "week":
-        const weekStart = getWeekStart(currentDate);
+        const weekStart = getWeekStart(date);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 6);
-        return `${monthNames[weekStart.getMonth()]} ${weekStart.getDate()} - ${
-          monthNames[weekEnd.getMonth()]
-        } ${weekEnd.getDate()}, ${weekStart.getFullYear()}`;
+        return `${format(weekStart, "MMM d")} - ${format(
+          weekEnd,
+          "MMM d, yyyy"
+        )}`;
       case "day":
-        return `${
-          monthNames[currentDate.getMonth()]
-        } ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+        return format(date, "EEEE, MMMM d, yyyy");
       case "agenda":
-        const agendaEnd = new Date(currentDate);
-        agendaEnd.setDate(agendaEnd.getDate() + 30);
-        return `${
-          monthNames[currentDate.getMonth()]
-        } ${currentDate.getDate()} - ${
-          monthNames[agendaEnd.getMonth()]
-        } ${agendaEnd.getDate()}, ${currentDate.getFullYear()}`;
+        return "Next 30 Days";
+      default:
+        return "";
     }
+  };
+
+  // Navigation handlers
+  const handlePrevious = () => {
+    const date =
+      currentDate instanceof Date
+        ? new Date(currentDate)
+        : new Date(currentDate);
+
+    switch (currentView) {
+      case "month":
+        date.setMonth(date.getMonth() - 1);
+        break;
+      case "week":
+        date.setDate(date.getDate() - 7);
+        break;
+      case "day":
+        date.setDate(date.getDate() - 1);
+        break;
+      case "agenda":
+        date.setDate(date.getDate() - 30);
+        break;
+    }
+    setCurrentDate(date);
+  };
+
+  const handleNext = () => {
+    const date =
+      currentDate instanceof Date
+        ? new Date(currentDate)
+        : new Date(currentDate);
+
+    switch (currentView) {
+      case "month":
+        date.setMonth(date.getMonth() + 1);
+        break;
+      case "week":
+        date.setDate(date.getDate() + 7);
+        break;
+      case "day":
+        date.setDate(date.getDate() + 1);
+        break;
+      case "agenda":
+        date.setDate(date.getDate() + 30);
+        break;
+    }
+    setCurrentDate(date);
   };
 
   return (
     <AuthGuard>
       <BurgerMenu onClick={() => setIsSidebarOpen(true)} />
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <QuickAddEventDialog
-        isOpen={isQuickAddOpen}
-        onClose={() => setIsQuickAddOpen(false)}
-      />
 
-      <div className="min-h-screen py-8 pl-36 pr-16">
-        <div className="flex h-[calc(100vh-4rem)]">
-          {/* Main Calendar View */}
-          <main className="flex-1 min-w-0 bg-card border-2 border-muted-foreground/20 rounded-l-lg p-6 overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              {/* Left: View Buttons + Navigation */}
-              <div className="flex items-center gap-4">
-                <h1 className="text-3xl font-bold mr-4">Schedule</h1>
-
-                {/* View Buttons */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCurrentView("month")}
-                    className={`px-3 py-1.5 rounded transition-colors ${
-                      currentView === "month"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    }`}
-                  >
-                    Month
-                  </button>
-                  <button
-                    onClick={() => setCurrentView("week")}
-                    className={`px-3 py-1.5 rounded transition-colors ${
-                      currentView === "week"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    }`}
-                  >
-                    Week
-                  </button>
-                  <button
-                    onClick={() => setCurrentView("day")}
-                    className={`px-3 py-1.5 rounded transition-colors ${
-                      currentView === "day"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    }`}
-                  >
-                    Day
-                  </button>
-                  <button
-                    onClick={() => setCurrentView("agenda")}
-                    className={`px-3 py-1.5 rounded transition-colors ${
-                      currentView === "agenda"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    }`}
-                  >
-                    Agenda
-                  </button>
-                </div>
-
-                {/* Navigation */}
-                <div className="flex items-center gap-2 ml-4">
-                  <button
-                    onClick={handlePrevious}
-                    className="p-1.5 rounded hover:bg-muted transition-colors"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={goToToday}
-                    className="px-3 py-1.5 rounded bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="p-1.5 rounded hover:bg-muted transition-colors"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Current Period Text */}
-                <span className="text-lg font-medium ml-4">
-                  {getCurrentPeriodText()}
-                </span>
-              </div>
-
-              {/* Right: New Event Button */}
+      <div className="min-h-screen p-8 pl-24">
+        <div className="max-w-[1800px] mx-auto">
+          {/* Header */}
+          <div className="mb-6 flex items-center justify-between">
+            {/* Left: View Selector */}
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsQuickAddOpen(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                onClick={() => setCurrentView("month")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  currentView === "month"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border hover:bg-accent"
+                }`}
               >
-                + New Event
+                Month
+              </button>
+              <button
+                onClick={() => setCurrentView("week")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  currentView === "week"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border hover:bg-accent"
+                }`}
+              >
+                Week
+              </button>
+              <button
+                onClick={() => setCurrentView("day")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  currentView === "day"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border hover:bg-accent"
+                }`}
+              >
+                Day
+              </button>
+              <button
+                onClick={() => setCurrentView("agenda")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  currentView === "agenda"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border hover:bg-accent"
+                }`}
+              >
+                Agenda
               </button>
             </div>
 
-            {/* Calendar View Component */}
-            <div className="flex-1 overflow-auto">
+            {/* Center: Navigation */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handlePrevious}
+                className="p-2 hover:bg-accent rounded-lg transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={goToToday}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Today
+              </button>
+
+              <button
+                onClick={handleNext}
+                className="p-2 hover:bg-accent rounded-lg transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+
+              <h2 className="text-lg font-semibold min-w-[200px] text-center">
+                {getCurrentPeriodText()}
+              </h2>
+            </div>
+
+            {/* Right: Spacer for balance */}
+            <div className="w-[400px]" />
+          </div>
+
+          {/* Main Content: Calendar + Detail View */}
+          <div className="flex gap-6 h-[calc(100vh-180px)]">
+            {/* Calendar Area */}
+            <div className="flex-1 bg-card border-2 border-border rounded-xl overflow-hidden">
               <CalendarView />
             </div>
-          </main>
 
-          {/* Event Detail Panel */}
-          <aside className="w-[450px] flex-shrink-0 bg-card border-2 border-muted-foreground/20 rounded-r-lg p-6 overflow-y-auto">
-            <EventDetailView />
-          </aside>
+            {/* Event Detail Panel */}
+            <div className="w-[450px] bg-card border-2 border-border rounded-xl p-6">
+              <EventDetailView />
+            </div>
+          </div>
         </div>
       </div>
     </AuthGuard>
   );
-}
-
-// Helper: Get week start (Monday)
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-  return new Date(d.setDate(diff));
-}
-
-// Helper: Get date range for current view
-function getDateRangeForView(
-  view: ViewType,
-  date: Date
-): { start: Date; end: Date } {
-  const start = new Date(date);
-  const end = new Date(date);
-
-  switch (view) {
-    case "month":
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      end.setMonth(end.getMonth() + 1);
-      end.setDate(0);
-      end.setHours(23, 59, 59, 999);
-      break;
-    case "week":
-      const weekStart = getWeekStart(date);
-      start.setTime(weekStart.getTime());
-      start.setHours(0, 0, 0, 0);
-      end.setTime(weekStart.getTime());
-      end.setDate(end.getDate() + 6);
-      end.setHours(23, 59, 59, 999);
-      break;
-    case "day":
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999);
-      break;
-    case "agenda":
-      start.setHours(0, 0, 0, 0);
-      end.setDate(end.getDate() + 30);
-      end.setHours(23, 59, 59, 999);
-      break;
-  }
-
-  return { start, end };
 }

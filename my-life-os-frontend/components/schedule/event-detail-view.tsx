@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useEventStore } from "@/lib/store/event-store";
-import { Calendar, X, Trash2, Edit } from "lucide-react";
+import { Calendar, X, Trash2, Edit, Tag, Clock } from "lucide-react";
 import { format } from "date-fns";
 import type { EditScope, DeleteScope } from "@/types";
 
@@ -362,36 +362,45 @@ export function EventDetailView() {
           <h3 className="text-xl font-semibold">{selectedEvent.title}</h3>
         </div>
 
-        {/* Domain */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">
-            Domain
-          </label>
-          <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-            {selectedEvent.domain}
+        {/* Domain, Date, Time - 3 Columns with Icons */}
+        <div className="grid grid-cols-3 gap-4">
+          {/* Domain */}
+          <div className="text-center">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10">
+              <Tag className="w-6 h-6 text-primary" />
+            </div>
+            <div className="text-sm font-medium text-primary">
+              {selectedEvent.domain}
+            </div>
           </div>
-        </div>
 
-        {/* Date & Time */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">
-            Date & Time
-          </label>
-          <div className="text-sm">
-            {format(new Date(selectedEvent.startDate), "PPP")}
-            {!selectedEvent.allDay && (
-              <>
-                <br />
-                {format(new Date(selectedEvent.startDate), "HH:mm")}
-                {selectedEvent.endDate &&
-                  ` - ${format(new Date(selectedEvent.endDate), "HH:mm")}`}
-              </>
-            )}
-            {selectedEvent.allDay && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                (All Day)
-              </span>
-            )}
+          {/* Date */}
+          <div className="text-center">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-muted">
+              <Calendar className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <div className="text-sm font-medium">
+              {format(new Date(selectedEvent.startDate), "d. MMM")}
+            </div>
+          </div>
+
+          {/* Time */}
+          <div className="text-center">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 rounded-full bg-blue-500/10">
+              <Clock className="w-6 h-6 text-blue-500" />
+            </div>
+            <div className="text-sm font-medium">
+              {selectedEvent.allDay ? (
+                "All Day"
+              ) : (
+                <>
+                  {format(new Date(selectedEvent.startDate), "HH:mm")}
+                  {selectedEvent.endDate && (
+                    <> - {format(new Date(selectedEvent.endDate), "HH:mm")}</>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -421,24 +430,6 @@ export function EventDetailView() {
             </div>
           </div>
         )}
-
-        {/* Timestamps */}
-        <div className="pt-4 border-t border-border">
-          <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-            <div>
-              <span className="font-medium">Created:</span>
-              <div className="mt-0.5">
-                {format(new Date(selectedEvent.createdAt), "PPp")}
-              </div>
-            </div>
-            <div>
-              <span className="font-medium">Updated:</span>
-              <div className="mt-0.5">
-                {format(new Date(selectedEvent.updatedAt), "PPp")}
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Actions - Fixed at bottom */}
