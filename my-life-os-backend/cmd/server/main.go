@@ -27,7 +27,7 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations (User + RefreshToken + Task + Routine + RoutineCompletion + Event + EventException)
+	// Run migrations (All entities)
 	if err := database.AutoMigrate(db,
 		&entities.User{},
 		&entities.RefreshToken{},
@@ -36,6 +36,10 @@ func main() {
 		&entities.RoutineCompletion{},
 		&entities.Event{},
 		&entities.EventException{},
+		&entities.Category{},
+		&entities.TechStackItem{},
+		&entities.Project{},
+		&entities.ProjectTask{},
 	); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
@@ -46,12 +50,18 @@ func main() {
 	taskRepo := postgres.NewTaskRepository(db)
 	routineRepo := postgres.NewRoutineRepository(db)
 	eventRepo := postgres.NewEventRepository(db)
+	categoryRepo := postgres.NewCategoryRepository(db)
+	techStackRepo := postgres.NewTechStackItemRepository(db)
+	projectRepo := postgres.NewProjectRepository(db)
 
 	// Initialize Services (Business Logic Layer)
 	authService := service.NewAuthService(userRepo, tokenRepo, cfg.JWTSecret)
 	taskService := service.NewTaskService(taskRepo)
 	routineService := service.NewRoutineService(routineRepo)
 	eventService := service.NewEventService(eventRepo)
+	categoryService := service.NewCategoryService(categoryRepo, techStackRepo)
+	techStackService := service.NewTechStackService(techStackRepo, categoryRepo)
+	projectService := service.NewProjectService(projectRepo, taskRepo)
 
 	// Initialize Handlers (HTTP Layer)
 	isDev := cfg.Environment == "development"
@@ -59,6 +69,9 @@ func main() {
 	taskHdl := authHandler.NewTaskHandler(taskService)
 	routineHdl := authHandler.NewRoutineHandler(routineService)
 	eventHdl := authHandler.NewEventHandler(eventService)
+	categoryHdl := authHandler.NewCategoryHandler(categoryService)
+	techStackHdl := authHandler.NewTechStackHandler(techStackService)
+	projectHdl := authHandler.NewProjectHandler(projectService)
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
@@ -134,6 +147,33 @@ func main() {
 	events.Get("/:id", eventHdl.GetEvent)       // GET /api/events/:id
 	events.Put("/:id", eventHdl.UpdateEvent)    // PUT /api/events/:id
 	events.Delete("/:id", eventHdl.DeleteEvent) // DELETE /api/events/:id (requires body with deleteScope)
+
+	// Category routes (protected - require authentication)
+	categories := api.Group("/categories", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	categories.Get("/", categoryHdl.GetCategories)        // GET /api/categories
+	categories.Post("/", categoryHdl.CreateCategory)      // POST /api/categories
+	categories.Get("/:id", categoryHdl.GetCategory)       // GET /api/categories/:id
+	categories.Put("/:id", categoryHdl.UpdateCategory)    // PUT /api/categories/:id
+	categories.Delete("/:id", categoryHdl.DeleteCategory) // DELETE /api/categories/:id
+
+	// Tech Stack routes (protected - require authentication)
+	techStack := api.Group("/tech-stack", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	techStack.Get("/", techStackHdl.GetTechStackItems)         // GET /api/tech-stack (with optional ?categoryId=...)
+	techStack.Post("/", techStackHdl.CreateTechStackItem)      // POST /api/tech-stack
+	techStack.Get("/:id", techStackHdl.GetTechStackItem)       // GET /api/tech-stack/:id
+	techStack.Put("/:id", techStackHdl.UpdateTechStackItem)    // PUT /api/tech-stack/:id
+	techStack.Delete("/:id", techStackHdl.DeleteTechStackItem) // DELETE /api/tech-stack/:id
+
+	// Project routes (protected - require authentication)
+	projects := api.Group("/projects", middleware.AuthMiddleware(authService), middleware.APIRateLimiter())
+	projects.Get("/", projectHdl.GetProjects)                      // GET /api/projects (with optional ?status=...&techStackIds=...)
+	projects.Post("/", projectHdl.CreateProject)                   // POST /api/projects
+	projects.Get("/:id", projectHdl.GetProject)                    // GET /api/projects/:id
+	projects.Put("/:id", projectHdl.UpdateProject)                 // PUT /api/projects/:id
+	projects.Delete("/:id", projectHdl.DeleteProject)              // DELETE /api/projects/:id
+	projects.Post("/:id/tasks", projectHdl.AssignTask)             // POST /api/projects/:id/tasks
+	projects.Delete("/:id/tasks/:taskId", projectHdl.UnassignTask) // DELETE /api/projects/:id/tasks/:taskId
+	projects.Get("/:id/tasks", projectHdl.GetProjectTasks)         // GET /api/projects/:id/tasks
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)
