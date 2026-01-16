@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  X,
   Lightbulb,
   Clipboard,
   Zap,
@@ -100,13 +99,6 @@ export function ProjectFilterSidebar() {
     }
   };
 
-  const hasActiveFilters = statusFilter !== null || techStackFilter.length > 0;
-
-  // Get selected tech stack items for display
-  const selectedTechStackItems = techStackItems.filter((item) =>
-    techStackFilter.includes(item.id)
-  );
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -116,56 +108,6 @@ export function ProjectFilterSidebar() {
           Filter projects by status and tech stack
         </p>
       </div>
-
-      {/* Active Filters */}
-      {hasActiveFilters && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">
-              Active Filters
-            </span>
-            <button
-              onClick={clearFilters}
-              className="text-xs text-primary hover:text-primary/80 transition-colors"
-            >
-              Clear all
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {/* Status Filter Chip */}
-            {statusFilter && (
-              <div className="flex items-center gap-1 bg-primary/10 border border-primary/20 rounded-md px-2 py-1">
-                <span className="text-xs text-foreground">
-                  {STATUS_OPTIONS.find((s) => s.value === statusFilter)?.label}
-                </span>
-                <button
-                  onClick={() => setStatusFilter(null)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-
-            {/* Tech Stack Filter Chips */}
-            {selectedTechStackItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-1 bg-primary/10 border border-primary/20 rounded-md px-2 py-1"
-              >
-                <span className="text-xs text-foreground">{item.name}</span>
-                <button
-                  onClick={() => handleTechStackToggle(item.id)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Status Filter */}
       <div>

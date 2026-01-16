@@ -167,7 +167,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <Calendar className="w-4 h-4 text-primary" />
                     <span>Schedule</span>
                   </button>
-                  <button className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground">
+                  <button
+                    onClick={() => handleNavigation("/projects")}
+                    className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+                  >
                     <FolderKanban className="w-4 h-4 text-primary" />
                     <span>Project Manager</span>
                   </button>
