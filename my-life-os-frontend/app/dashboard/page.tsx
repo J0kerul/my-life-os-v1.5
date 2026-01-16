@@ -9,6 +9,7 @@ import { Sidebar } from "@/components/sidebar";
 import { WeeklyTaskBoard } from "@/components/dashboard/weekly-task-board";
 import { TodaysRoutinesWidget } from "@/components/dashboard/todays-routines-widget";
 import { WeekAheadWidget } from "@/components/dashboard/week-ahead-widget";
+import { FeaturedProjectWidget } from "@/components/dashboard/featured-project-widget";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -95,9 +96,9 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* 3-Column Grid for other widgets */}
+          {/* 3-Column Grid for widgets */}
           <div className="grid grid-cols-3 gap-6">
-            {/* Weekly Task Board (Spans 2 columns) */}
+            {/* Row 1: Weekly Task Board (Spans 2 columns) */}
             <div className="col-span-2">
               <WeeklyTaskBoard
                 isExpanded={areWidgetsExpanded}
@@ -105,12 +106,17 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* Column 3 - Today's Routines Widget */}
+            {/* Row 1: Today's Routines Widget */}
             <div>
               <TodaysRoutinesWidget
                 isExpanded={areWidgetsExpanded}
                 onToggleExpand={handleToggleWidgets}
               />
+            </div>
+
+            {/* Row 2: Featured Project Widget (Middle column only) */}
+            <div className="col-start-2">
+              <FeaturedProjectWidget />
             </div>
           </div>
         </div>

@@ -2,28 +2,120 @@
 
 import { useTaskStore } from "@/lib/store/task-store";
 import type { TaskDomain, TimeFilter } from "@/types";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import {
+  Clock,
+  Calendar,
+  CalendarClock,
+  CalendarDays,
+  Hourglass,
+  Infinity,
+  AlertCircle,
+  Briefcase,
+  GraduationCap,
+  Code2,
+  Lightbulb,
+  Target,
+  Wallet,
+  Home,
+  HeartPulse,
+  Circle,
+  CheckCircle2,
+} from "lucide-react";
 
-const TIME_FILTERS: { value: TimeFilter | null; label: string }[] = [
-  { value: null, label: "All Tasks" },
-  { value: "overdue", label: "Overdue" },
-  { value: "today", label: "Today" },
-  { value: "tomorrow", label: "Tomorrow" },
-  { value: "next_week", label: "Next Week" },
-  { value: "next_month", label: "Next Month" },
-  { value: "long_term", label: "Long Term" },
+const TIME_FILTERS: {
+  value: TimeFilter | null;
+  label: string;
+  icon: any;
+  color: string;
+}[] = [
+  { value: null, label: "All Tasks", icon: Infinity, color: "text-gray-400" },
+  {
+    value: "overdue",
+    label: "Overdue",
+    icon: AlertCircle,
+    color: "text-red-400",
+  },
+  { value: "today", label: "Today", icon: Clock, color: "text-blue-400" },
+  {
+    value: "tomorrow",
+    label: "Tomorrow",
+    icon: Calendar,
+    color: "text-green-400",
+  },
+  {
+    value: "next_week",
+    label: "Next Week",
+    icon: CalendarDays,
+    color: "text-purple-400",
+  },
+  {
+    value: "next_month",
+    label: "Next Month",
+    icon: CalendarClock,
+    color: "text-orange-400",
+  },
+  {
+    value: "long_term",
+    label: "Long Term",
+    icon: Hourglass,
+    color: "text-slate-400",
+  },
 ];
 
-const DOMAINS: TaskDomain[] = [
-  "Work",
-  "University",
-  "Coding Project",
-  "Personal Project",
-  "Goals",
-  "Finances",
-  "Household",
-  "Health",
+const DOMAINS: {
+  value: TaskDomain;
+  label: string;
+  icon: any;
+  color: string;
+}[] = [
+  { value: "Work", label: "Work", icon: Briefcase, color: "text-blue-400" },
+  {
+    value: "University",
+    label: "University",
+    icon: GraduationCap,
+    color: "text-purple-400",
+  },
+  {
+    value: "Coding Project",
+    label: "Coding Project",
+    icon: Code2,
+    color: "text-green-400",
+  },
+  {
+    value: "Personal Project",
+    label: "Personal Project",
+    icon: Lightbulb,
+    color: "text-yellow-400",
+  },
+  { value: "Goals", label: "Goals", icon: Target, color: "text-red-400" },
+  {
+    value: "Finances",
+    label: "Finances",
+    icon: Wallet,
+    color: "text-emerald-400",
+  },
+  {
+    value: "Household",
+    label: "Household",
+    icon: Home,
+    color: "text-orange-400",
+  },
+  {
+    value: "Health",
+    label: "Health",
+    icon: HeartPulse,
+    color: "text-pink-400",
+  },
+];
+
+const STATUS_OPTIONS: {
+  value: "Todo" | "Done";
+  label: string;
+  icon: any;
+  color: string;
+}[] = [
+  { value: "Todo", label: "To do", icon: Circle, color: "text-blue-400" },
+  { value: "Done", label: "Done", icon: CheckCircle2, color: "text-green-400" },
 ];
 
 export function TaskFilterSidebar() {
@@ -36,11 +128,9 @@ export function TaskFilterSidebar() {
     setStatusFilter,
     clearFilters,
   } = useTaskStore();
-  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
 
   const handleTimeFilterChange = (filter: TimeFilter | null) => {
     setTimeFilter(filter);
-    setIsTimeDropdownOpen(false);
   };
 
   const handleDomainFilterToggle = (domain: TaskDomain) => {
@@ -63,161 +153,104 @@ export function TaskFilterSidebar() {
     }
   };
 
-  const currentTimeLabel =
-    TIME_FILTERS.find((f) => f.value === timeFilter)?.label || "All Tasks";
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">Filters</h2>
-        {(timeFilter !== null || domainFilter || statusFilter) && (
-          <button
-            onClick={clearFilters}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Clear All
-          </button>
-        )}
+      <div>
+        <h2 className="text-xl font-bold text-foreground mb-1">Filters</h2>
+        <p className="text-sm text-muted-foreground">
+          Filter tasks by time, domain, and status
+        </p>
       </div>
 
-      {/* Time Filter Dropdown */}
+      {/* Time Filter */}
       <div>
-        <label className="text-sm font-medium mb-2 block">Time</label>
-        <div className="relative">
-          <button
-            onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-left flex items-center justify-between hover:bg-accent transition-colors"
-          >
-            <span>{currentTimeLabel}</span>
-            <ChevronDown
-              className={`w-4 h-4 text-muted-foreground transition-transform ${
-                isTimeDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          {/* Dropdown Menu */}
-          {isTimeDropdownOpen && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setIsTimeDropdownOpen(false)}
-              />
-
-              {/* Menu */}
-              <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-20 overflow-hidden">
-                {TIME_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => handleTimeFilterChange(filter.value)}
-                    className={`w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors ${
-                      timeFilter === filter.value
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Domain Filter Buttons */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">Domain</label>
-        <div className="space-y-1">
-          {DOMAINS.map((domain) => {
-            const isActive = domainFilter === domain;
+        <h3 className="text-sm font-semibold text-foreground mb-3">Time</h3>
+        <div className="space-y-2">
+          {TIME_FILTERS.map((filter) => {
+            const Icon = filter.icon;
+            const isActive = timeFilter === filter.value;
             return (
               <button
-                key={domain}
-                onClick={() => handleDomainFilterToggle(domain)}
-                className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors ${
+                key={filter.value ?? "all"}
+                onClick={() => handleTimeFilterChange(filter.value)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   isActive
-                    ? "bg-primary text-primary-foreground font-medium"
-                    : "bg-background border border-border hover:bg-accent"
+                    ? "bg-primary/10 border border-primary text-foreground"
+                    : "border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                 }`}
               >
-                {domain}
+                <Icon
+                  className={`h-4 w-4 ${
+                    isActive ? "text-primary" : filter.color
+                  }`}
+                />
+                <span className="text-sm">{filter.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Completion Filter Buttons */}
+      {/* Domain Filter */}
       <div>
-        <label className="text-sm font-medium mb-2 block">Completion</label>
-        <div className="space-y-1">
-          <button
-            onClick={() => handleStatusFilterToggle("Todo")}
-            className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors ${
-              statusFilter === "Todo"
-                ? "bg-primary text-primary-foreground font-medium"
-                : "bg-background border border-border hover:bg-accent"
-            }`}
-          >
-            To do
-          </button>
-          <button
-            onClick={() => handleStatusFilterToggle("Done")}
-            className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors ${
-              statusFilter === "Done"
-                ? "bg-primary text-primary-foreground font-medium"
-                : "bg-background border border-border hover:bg-accent"
-            }`}
-          >
-            Done
-          </button>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Domain</h3>
+        <div className="space-y-2">
+          {DOMAINS.map((domain) => {
+            const Icon = domain.icon;
+            const isActive = domainFilter === domain.value;
+            return (
+              <button
+                key={domain.value}
+                onClick={() => handleDomainFilterToggle(domain.value)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-primary/10 border border-primary text-foreground"
+                    : "border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                }`}
+              >
+                <Icon
+                  className={`h-4 w-4 ${
+                    isActive ? "text-primary" : domain.color
+                  }`}
+                />
+                <span className="text-sm">{domain.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Active Filters Summary */}
-      {(timeFilter !== null || domainFilter || statusFilter) && (
-        <div className="pt-4 border-t border-border">
-          <p className="text-xs text-muted-foreground mb-2">Active Filters:</p>
-          <div className="space-y-1">
-            {timeFilter !== null && (
-              <div className="flex items-center justify-between text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                <span>Time: {currentTimeLabel}</span>
-                <button
-                  onClick={() => setTimeFilter(null)}
-                  className="hover:text-primary-foreground transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-            {domainFilter && (
-              <div className="flex items-center justify-between text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                <span>Domain: {domainFilter}</span>
-                <button
-                  onClick={() => setDomainFilter(null)}
-                  className="hover:text-primary-foreground transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-            {statusFilter && (
-              <div className="flex items-center justify-between text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                <span>Status: {statusFilter}</span>
-                <button
-                  onClick={() => setStatusFilter(null)}
-                  className="hover:text-primary-foreground transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-          </div>
+      {/* Completion Filter */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-3">
+          Completion
+        </h3>
+        <div className="space-y-2">
+          {STATUS_OPTIONS.map((status) => {
+            const Icon = status.icon;
+            const isActive = statusFilter === status.value;
+            return (
+              <button
+                key={status.value}
+                onClick={() => handleStatusFilterToggle(status.value)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-primary/10 border border-primary text-foreground"
+                    : "border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                }`}
+              >
+                <Icon
+                  className={`h-4 w-4 ${
+                    isActive ? "text-primary" : status.color
+                  }`}
+                />
+                <span className="text-sm">{status.label}</span>
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
