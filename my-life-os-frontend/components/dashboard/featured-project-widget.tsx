@@ -7,10 +7,15 @@ import {
   Settings,
   ExternalLink,
   X,
+  Plus,
+  FolderPlus,
+  ListPlus,
+  Link2,
 } from "lucide-react";
 import { useProjectStore } from "@/lib/store/project-store";
 import { useTaskStore } from "@/lib/store/task-store";
 import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
+import type { Task, TaskPriority, TaskDomain, ProjectStatus } from "@/types";
 
 export function FeaturedProjectWidget() {
   const { projects, fetchProjects, projectTasks, fetchProjectTasks } =
@@ -24,6 +29,12 @@ export function FeaturedProjectWidget() {
   const [featuredProjectId, setFeaturedProjectId] = useState<string | null>(
     null
   );
+
+  // Quick Add states
+  const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showNewTaskDialog, setShowNewTaskDialog] = useState(false);
+  const [showAssignTaskDialog, setShowAssignTaskDialog] = useState(false);
 
   // Load featured project ID from localStorage
   useEffect(() => {
@@ -130,6 +141,13 @@ export function FeaturedProjectWidget() {
                   {completedTasks}/{totalTasks} ({progressPercentage}%)
                 </div>
               )}
+              <button
+                onClick={() => setShowQuickAddMenu(true)}
+                className="p-2 hover:bg-background rounded transition-colors text-muted-foreground hover:text-primary"
+                title="Quick Add"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
               <button
                 onClick={() => setShowProjectSelector(true)}
                 className="p-2 hover:bg-background rounded transition-colors text-muted-foreground hover:text-primary"
@@ -385,6 +403,114 @@ export function FeaturedProjectWidget() {
         </>
       )}
 
+      {/* Quick Add Action Menu */}
+      {showQuickAddMenu && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            onClick={() => setShowQuickAddMenu(false)}
+          />
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div
+              className="bg-card border border-border rounded-lg w-full max-w-sm overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-4 border-b border-border">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Quick Add
+                </h3>
+              </div>
+              <div className="p-4 space-y-2">
+                <button
+                  onClick={() => {
+                    setShowQuickAddMenu(false);
+                    setShowNewProjectDialog(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                    <FolderPlus className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-foreground">
+                      New Project
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Create a new project
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowQuickAddMenu(false);
+                    setShowNewTaskDialog(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                    <ListPlus className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-foreground">New Task</div>
+                    <div className="text-xs text-muted-foreground">
+                      Create a completely new task
+                    </div>
+                  </div>
+                </button>
+
+                {featuredProject && (
+                  <button
+                    onClick={() => {
+                      setShowQuickAddMenu(false);
+                      setShowAssignTaskDialog(true);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-colors text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                      <Link2 className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-foreground">
+                        Assign Existing Task
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Add a task to this project
+                      </div>
+                    </div>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* New Project Dialog */}
+      {showNewProjectDialog && (
+        <NewProjectDialog
+          isOpen={showNewProjectDialog}
+          onClose={() => setShowNewProjectDialog(false)}
+        />
+      )}
+
+      {/* New Task Dialog */}
+      {showNewTaskDialog && (
+        <NewTaskDialog
+          isOpen={showNewTaskDialog}
+          onClose={() => setShowNewTaskDialog(false)}
+        />
+      )}
+
+      {/* Assign Existing Task Dialog */}
+      {showAssignTaskDialog && featuredProject && (
+        <AssignTaskDialog
+          isOpen={showAssignTaskDialog}
+          onClose={() => setShowAssignTaskDialog(false)}
+          projectId={featuredProject.id}
+        />
+      )}
+
       {/* Task Detail Modal - Full Featured with Edit/Delete */}
       <TaskDetailModal
         taskId={selectedTaskId}
@@ -394,6 +520,510 @@ export function FeaturedProjectWidget() {
           setSelectedTaskId(null);
         }}
       />
+    </>
+  );
+}
+
+// New Project Dialog Component
+function NewProjectDialog({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const { createProject, fetchProjects } = useProjectStore();
+  const [isCreating, setIsCreating] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState<ProjectStatus>("Idea");
+  const [repositoryUrl, setRepositoryUrl] = useState("");
+  const [selectedTechStackIds, setSelectedTechStackIds] = useState<string[]>(
+    []
+  );
+  const [techStackItems, setTechStackItems] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  const STATUS_OPTIONS: ProjectStatus[] = [
+    "Idea",
+    "Planning",
+    "Active",
+    "Debugging",
+    "Testing",
+    "OnHold",
+    "Finished",
+    "Abandoned",
+  ];
+
+  // Fetch tech stack items and categories on mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchTechStackData();
+    }
+  }, [isOpen]);
+
+  const fetchTechStackData = async () => {
+    try {
+      // Fetch categories
+      const categoriesRes = await fetch("/api/categories", {
+        credentials: "include",
+      });
+      if (categoriesRes.ok) {
+        const categoriesData = await categoriesRes.json();
+        setCategories(categoriesData.categories || []);
+      }
+
+      // Fetch tech stack items
+      const itemsRes = await fetch("/api/tech-stack", {
+        credentials: "include",
+      });
+      if (itemsRes.ok) {
+        const itemsData = await itemsRes.json();
+        setTechStackItems(itemsData.techStackItems || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch tech stack data:", error);
+    }
+  };
+
+  // Group tech stack items by category
+  const groupedTechStack = categories.map((category) => ({
+    category,
+    items: techStackItems.filter((item) => item.categoryId === category.id),
+  }));
+
+  const toggleTechStack = (id: string) => {
+    setSelectedTechStackIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleCreate = async () => {
+    if (!title.trim() || !description.trim()) return;
+
+    setIsCreating(true);
+    try {
+      await createProject({
+        title: title.trim(),
+        description: description.trim(),
+        status,
+        repositoryUrl: repositoryUrl.trim() || undefined,
+        techStackIds: selectedTechStackIds,
+      });
+      await fetchProjects();
+      setTitle("");
+      setDescription("");
+      setStatus("Idea");
+      setRepositoryUrl("");
+      setSelectedTechStackIds([]);
+      onClose();
+    } catch (error) {
+      console.error("Failed to create project:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+        onClick={onClose}
+      />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div
+          className="bg-card border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="text-lg font-semibold text-foreground">
+              New Project
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-4 space-y-4 overflow-y-auto">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Title *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Project title..."
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Description *
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Project description..."
+                rows={4}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Repository URL
+                </label>
+                <input
+                  type="url"
+                  value={repositoryUrl}
+                  onChange={(e) => setRepositoryUrl(e.target.value)}
+                  placeholder="https://github.com/..."
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Tech Stack
+              </label>
+              <div className="space-y-3 max-h-48 overflow-y-auto border border-border rounded-lg p-3">
+                {groupedTechStack.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No tech stack items available. Add them in Settings.
+                  </p>
+                ) : (
+                  groupedTechStack.map(({ category, items }) => (
+                    <div key={category.id}>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+                        {category.name}
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {items.map((item: any) => (
+                          <button
+                            key={item.id}
+                            onClick={() => toggleTechStack(item.id)}
+                            className={`px-2 py-1 text-xs rounded transition-colors ${
+                              selectedTechStackIds.includes(item.id)
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-background border border-border hover:border-primary/50"
+                            }`}
+                          >
+                            {item.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <button
+              onClick={handleCreate}
+              disabled={isCreating || !title.trim() || !description.trim()}
+              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isCreating ? "Creating..." : "Create Project"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// New Task Dialog Component
+function NewTaskDialog({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const { createTask, fetchTasksWithFilters } = useTaskStore();
+  const [isCreating, setIsCreating] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<TaskPriority>("Medium");
+  const [domain, setDomain] = useState<TaskDomain>("Work");
+  const [deadline, setDeadline] = useState("");
+
+  const PRIORITIES: TaskPriority[] = ["Low", "Medium", "High"];
+  const DOMAINS: TaskDomain[] = [
+    "Work",
+    "University",
+    "Coding Project",
+    "Personal Project",
+    "Goals",
+    "Finances",
+    "Household",
+    "Health",
+  ];
+
+  const handleCreate = async () => {
+    if (!title.trim()) return;
+
+    setIsCreating(true);
+    try {
+      await createTask({
+        title: title.trim(),
+        priority,
+        domain,
+        deadline: deadline ? new Date(deadline).toISOString() : undefined,
+        description: description.trim() || undefined,
+      });
+      await fetchTasksWithFilters(undefined, undefined, null);
+      setTitle("");
+      setDescription("");
+      setPriority("Medium");
+      setDomain("Work");
+      setDeadline("");
+      onClose();
+    } catch (error) {
+      console.error("Failed to create task:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+        onClick={onClose}
+      />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div
+          className="bg-card border border-border rounded-lg w-full max-w-md overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="text-lg font-semibold text-foreground">New Task</h3>
+            <button
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Title *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Task title..."
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Task description..."
+                rows={4}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Priority
+                </label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {PRIORITIES.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Domain</label>
+                <select
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value as TaskDomain)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {DOMAINS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Deadline</label>
+              <input
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
+              />
+            </div>
+            <button
+              onClick={handleCreate}
+              disabled={isCreating || !title.trim()}
+              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isCreating ? "Creating..." : "Create Task"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Assign Existing Task Dialog Component
+function AssignTaskDialog({
+  isOpen,
+  onClose,
+  projectId,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  projectId: string;
+}) {
+  const { tasks, fetchTasksWithFilters } = useTaskStore();
+  const { assignTask, fetchProjectTasks, projectTasks } = useProjectStore();
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchTasksWithFilters(undefined, undefined, null);
+    }
+  }, [isOpen, fetchTasksWithFilters]);
+
+  // Filter out already assigned tasks
+  const assignedTaskIds = new Set(
+    projectTasks.map((pt) => pt.task?.id).filter(Boolean)
+  );
+  const availableTasks = tasks.filter((task) => !assignedTaskIds.has(task.id));
+
+  // Filter by search query
+  const filteredTasks = availableTasks.filter((task) =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAssignTask = async (taskId: string) => {
+    setIsAssigning(true);
+    try {
+      await assignTask(projectId, { taskId });
+      await fetchProjectTasks(projectId);
+      onClose();
+    } catch (error) {
+      console.error("Failed to assign task:", error);
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+        onClick={onClose}
+      />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div
+          className="bg-card border border-border rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="text-lg font-semibold text-foreground">
+              Assign Existing Task
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-4 border-b border-border">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tasks..."
+              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="overflow-y-auto p-4 space-y-2 flex-1">
+            {filteredTasks.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                {searchQuery
+                  ? "No tasks found"
+                  : "No available tasks to assign"}
+              </p>
+            ) : (
+              filteredTasks.map((task) => (
+                <div
+                  key={task.id}
+                  onClick={() => handleAssignTask(task.id)}
+                  className="p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer"
+                >
+                  <h5 className="text-sm font-medium text-foreground mb-1">
+                    {task.title}
+                  </h5>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span
+                      className={`px-2 py-0.5 rounded ${
+                        task.priority === "High"
+                          ? "bg-red-500/10 text-red-400"
+                          : task.priority === "Medium"
+                          ? "bg-yellow-500/10 text-yellow-400"
+                          : "bg-green-500/10 text-green-400"
+                      }`}
+                    >
+                      {task.priority}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-card text-muted-foreground">
+                      {task.domain}
+                    </span>
+                    {task.deadline && (
+                      <span className="px-2 py-0.5 rounded bg-card text-muted-foreground">
+                        {new Date(task.deadline).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 }

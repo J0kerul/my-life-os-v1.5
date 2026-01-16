@@ -1,23 +1,13 @@
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-
-// Get auth token from localStorage
-const getAuthToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("accessToken");
-};
-
 // Get all categories
 export async function getCategories(): Promise<{ categories: Category[] }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/categories`, {
+  const response = await fetch("/api/categories", {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -30,14 +20,12 @@ export async function getCategories(): Promise<{ categories: Category[] }> {
 
 // Get single category
 export async function getCategory(id: string): Promise<{ category: Category }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/categories/${id}`, {
+  const response = await fetch(`/api/categories/${id}`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -50,14 +38,12 @@ export async function getCategory(id: string): Promise<{ category: Category }> {
 
 // Create category
 export async function createCategory(data: CreateCategoryRequest): Promise<{ message: string; category: Category }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/categories`, {
+  const response = await fetch("/api/categories", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
@@ -71,14 +57,12 @@ export async function createCategory(data: CreateCategoryRequest): Promise<{ mes
 
 // Update category
 export async function updateCategory(id: string, data: UpdateCategoryRequest): Promise<{ message: string; category: Category }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/categories/${id}`, {
+  const response = await fetch(`/api/categories/${id}`, {
     method: "PUT",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
@@ -92,14 +76,12 @@ export async function updateCategory(id: string, data: UpdateCategoryRequest): P
 
 // Delete category
 export async function deleteCategory(id: string): Promise<{ message: string }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/categories/${id}`, {
+  const response = await fetch(`/api/categories/${id}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
   });
 
   if (!response.ok) {

@@ -1,26 +1,17 @@
 import { TechStackItem, CreateTechStackItemRequest, UpdateTechStackItemRequest } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-
-const getAuthToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("accessToken");
-};
-
 // Get all tech stack items (optional categoryId filter)
-export async function getTechStackItems(categoryId?: string): Promise<{ items: TechStackItem[] }> {
-  const token = getAuthToken();
-  
+export async function getTechStackItems(categoryId?: string): Promise<{ techStackItems: TechStackItem[] }> {
   const url = categoryId 
-    ? `${API_URL}/tech-stack?categoryId=${categoryId}`
-    : `${API_URL}/tech-stack`;
+    ? `/api/tech-stack?categoryId=${categoryId}`
+    : `/api/tech-stack`;
   
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -32,15 +23,13 @@ export async function getTechStackItems(categoryId?: string): Promise<{ items: T
 }
 
 // Get single tech stack item
-export async function getTechStackItem(id: string): Promise<{ item: TechStackItem }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/tech-stack/${id}`, {
+export async function getTechStackItem(id: string): Promise<{ techStackItem: TechStackItem }> {
+  const response = await fetch(`/api/tech-stack/${id}`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -52,15 +41,13 @@ export async function getTechStackItem(id: string): Promise<{ item: TechStackIte
 }
 
 // Create tech stack item
-export async function createTechStackItem(data: CreateTechStackItemRequest): Promise<{ message: string; item: TechStackItem }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/tech-stack`, {
+export async function createTechStackItem(data: CreateTechStackItemRequest): Promise<{ message: string; techStackItem: TechStackItem }> {
+  const response = await fetch("/api/tech-stack", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
@@ -73,15 +60,13 @@ export async function createTechStackItem(data: CreateTechStackItemRequest): Pro
 }
 
 // Update tech stack item
-export async function updateTechStackItem(id: string, data: UpdateTechStackItemRequest): Promise<{ message: string; item: TechStackItem }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/tech-stack/${id}`, {
+export async function updateTechStackItem(id: string, data: UpdateTechStackItemRequest): Promise<{ message: string; techStackItem: TechStackItem }> {
+  const response = await fetch(`/api/tech-stack/${id}`, {
     method: "PUT",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(data),
   });
 
@@ -95,14 +80,12 @@ export async function updateTechStackItem(id: string, data: UpdateTechStackItemR
 
 // Delete tech stack item
 export async function deleteTechStackItem(id: string): Promise<{ message: string }> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_URL}/tech-stack/${id}`, {
+  const response = await fetch(`/api/tech-stack/${id}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    credentials: "include",
   });
 
   if (!response.ok) {
