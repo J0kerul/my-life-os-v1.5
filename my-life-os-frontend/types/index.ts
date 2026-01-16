@@ -270,3 +270,97 @@ export interface EventResponse {
   event: Event;
   message?: string;
 }
+
+// ============================================
+// PROJECT MANAGER TYPES
+// ============================================
+
+// Category
+export interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+}
+
+export interface UpdateCategoryRequest {
+  name: string;
+}
+
+// Tech Stack Item
+export interface TechStackItem {
+  id: string;
+  userId: string;
+  categoryId: string;
+  name: string;
+  createdAt: string;
+  category?: Category; // Populated from backend
+}
+
+export interface CreateTechStackItemRequest {
+  categoryId: string;
+  name: string;
+}
+
+export interface UpdateTechStackItemRequest {
+  categoryId: string;
+  name: string;
+}
+
+// Project Status
+export type ProjectStatus = 
+  | "Idea"
+  | "Planning" 
+  | "Active"
+  | "Debugging"
+  | "Testing"
+  | "OnHold"
+  | "Finished"
+  | "Abandoned";
+
+// Project
+export interface Project {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  status: ProjectStatus;
+  repositoryUrl?: string;
+  techStack: TechStackItem[];
+  tasks: ProjectTask[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProjectRequest {
+  title: string;
+  description: string;
+  status: ProjectStatus;
+  repositoryUrl?: string;
+  techStackIds: string[];
+}
+
+export interface UpdateProjectRequest {
+  title: string;
+  description: string;
+  status: ProjectStatus;
+  repositoryUrl?: string;
+  techStackIds: string[];
+}
+
+// Project Task Assignment
+export interface ProjectTask {
+  id: string;
+  projectId: string;
+  taskId: string;
+  assignedAt: string;
+  task?: Task; // Populated from backend
+}
+
+export interface AssignTaskRequest {
+  taskId: string;
+}
